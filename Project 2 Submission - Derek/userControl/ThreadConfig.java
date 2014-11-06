@@ -1,0 +1,5 @@
+package userControl;
+
+public enum ThreadConfig {
+	NONE, SIMULATIONONLY, PRESENTATIONONLY, SIMULATIONANDPRESENTATION
+};
