@@ -1,7 +1,7 @@
 package dao;
 
 import models.DatabaseQuery;
-import models.Planet;
+import models.Experiment;
 
 // TODO Delete once programming. I made this an interface in case you wanted to attempt different implementations of a DAO.
 public interface DatabaseDao {
@@ -13,13 +13,13 @@ public interface DatabaseDao {
 	 * @param query
 	 * @return
 	 */
-	public Planet get(DatabaseQuery query);
+	public Experiment get(DatabaseQuery query);
 
 	/**
 	 * Methods for saving a planet into the database.
 	 * 
 	 * @param planet
 	 */
-	public void saveOrUpdate(Planet planet);
+	public void saveOrUpdate(Experiment planet);
 
 }
