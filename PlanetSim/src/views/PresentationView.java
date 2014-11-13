@@ -10,6 +10,8 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
@@ -21,7 +23,7 @@ import javax.swing.text.NumberFormatter;
 
 import constants.SimulationConstants;
 
-public class PresentationView extends JFrame {
+public class PresentationView extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -37,7 +39,6 @@ public class PresentationView extends JFrame {
 	private JFormattedTextField inputOrbitalEccentricity;
 	private JFormattedTextField inputTimeStep;
 	private JFormattedTextField inputSimulationLength;
-	private final JFormattedTextField[] simulationInputs = { inputSimulationName, inputAxialTilt, inputOrbitalEccentricity, inputTimeStep, inputSimulationLength };
 
 	// Informational Labels
 	private final JLabel labelDateTime = new JLabel();
@@ -178,8 +179,7 @@ public class PresentationView extends JFrame {
 
 		// Adds the control buttons to the panel
 		for (final JButton controlButton : simulationControls) {
-			// TODO Set up action listener
-			// controlButton.addActionListener(this);
+			controlButton.addActionListener(this);
 			controlsPanel.add(controlButton);
 		}
 
@@ -189,7 +189,46 @@ public class PresentationView extends JFrame {
 	private JPanel newQueryView() {
 		final JPanel queryView = new JPanel();
 		queryView.add(new JLabel("TEST 1"));
+		queryView.setLayout(new BorderLayout());
+		queryView.add(buildQuerySettingsAndInfoPanel(), BorderLayout.WEST);
 		return queryView;
+	}
+
+	private JPanel buildQuerySettingsAndInfoPanel() {
+		final JPanel panel = new JPanel(new GridBagLayout());
+
+		// Define GUI Constraints
+		labelConstraints = buildConstraints(GridBagConstraints.CENTER, 0, new Insets(10, 0, 0, 0));
+		valueConstraints = buildConstraints(GridBagConstraints.LINE_START, 1, new Insets(10, 10, 0, 0));
+
+		labelConstraints.gridwidth = 2;
+		panel.add(new JLabel("Query Information"), labelConstraints);
+
+		labelConstraints.gridwidth = 1;
+		labelConstraints.anchor = GridBagConstraints.LINE_START;
+
+		// Simulation Name
+		final JLabel labelSimulationName = new JLabel("Simulation Name:");
+		panel.add(labelSimulationName, labelConstraints);
+		// inputSimulationName = new JFormattedTextField();
+		// inputSimulationName.setColumns(5);
+		// panel.add(inputSimulationName, valueConstraints);
+
+		// Simulation Name
+		final JLabel labelLattitudeNorth = new JLabel("Latitude North:");
+		panel.add(labelLattitudeNorth, labelConstraints);
+
+		final JLabel labelLattitudeSouth = new JLabel("Latitude South:");
+		panel.add(labelLattitudeSouth, labelConstraints);
+
+		final JLabel labelLongitudeWest = new JLabel("Longitude West");
+		panel.add(labelLongitudeWest, labelConstraints);
+
+		final JLabel labelLongitudeEast = new JLabel("Longitude East:");
+		panel.add(labelLongitudeEast, labelConstraints);
+
+		setDefaultControlValues();
+		return panel;
 	}
 
 	private NumberFormatter buildNumberFormatter(final int min, final int max) {
@@ -230,15 +269,44 @@ public class PresentationView extends JFrame {
 	}
 
 	private void disableInputs() {
-		for (final JFormattedTextField input : simulationInputs) {
-			input.setEnabled(false);
-		}
+		inputSimulationName.setEnabled(false);
+		inputAxialTilt.setEnabled(false);
+		inputOrbitalEccentricity.setEnabled(false);
+		inputTimeStep.setEnabled(false);
+		inputSimulationLength.setEnabled(false);
 	}
 
 	private void enableInputs() {
-		for (final JFormattedTextField input : simulationInputs) {
-			input.setEnabled(true);
+		inputSimulationName.setEnabled(true);
+		inputAxialTilt.setEnabled(true);
+		inputOrbitalEccentricity.setEnabled(true);
+		inputTimeStep.setEnabled(true);
+		inputSimulationLength.setEnabled(true);
+	}
+
+	public void actionPerformed(final ActionEvent event) {
+		final Object source = event.getSource();
+
+		if (source == buttonStart) {
+			disableInputs();
+
+			if ("Start".equals(buttonStart.getText())) {
+			}
+			buttonStart.setText("Resume");
+			buttonStart.setEnabled(false);
+			buttonPause.setEnabled(true);
+			buttonStop.setEnabled(true);
+		} else if (source == buttonPause) {
+			buttonStart.setEnabled(true);
+			buttonPause.setEnabled(false);
+			buttonStop.setEnabled(true);
+		} else if (source == buttonStop) {
+			enableInputs();
+			buttonStart.setText("Start");
+			setDefaultControlValues();
+			setDefaultButtonsEnabledStatus();
 		}
+		System.out.println(inputSimulationName);
 	}
 
 }
