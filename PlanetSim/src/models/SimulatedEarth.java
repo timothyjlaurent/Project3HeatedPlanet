@@ -1,5 +1,12 @@
-package edu.gatech.heatedearth.sim;
-import EarthSim.SimState;
+package models;
+
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import static java.lang.Math.*;
+
 
 public class SimulatedEarth {
 
@@ -9,23 +16,23 @@ public class SimulatedEarth {
 	private static double surfaceAreaOfEarth = 510072000000000.0;
 	private static int initialCellTemperature = 288;
 	private static double degreesRotatedPerMinute = 360.0/1440.0;
-
-	private static double heatPerMinute = 5000 ;
-
+	private static double heatPerMinute = 5000;
+	private static final double  ARGUMENT_OF_PERIAPSIS = 114 ; //degrees
 	private static double heatPerIteration ;
-	
+	private static final Calendar START_DATE = new GregorianCalendar(2000,0,4,0,0);
+	private static int time = 0 ; // time in minutes
+	private static final int MINUTES_IN_YEAR = 525600;
+	private static double eccentricity;
+	private static final double SEMIMAJOR_AXIS = 149600000;
+	private static double obliquity;
+
 	private int gridSpacing;
-	
 	protected int gridRows;
 	protected int gridColumns;
 	protected double proportionOfEquator;
 	
 	protected EarthCell[][] earth;
 
-	/**
-	 * 
-	 */
-	public int time;
 
 	/**
 	 * 
@@ -48,7 +55,7 @@ public class SimulatedEarth {
 	 * 
 	 * @param gridSpacing number of degrees for the grid; must divide evenly into 180
 	 */
-	public SimulatedEarth (int gridSpacing)
+	public SimulatedEarth(int gridSpacing, double orbitalEccentricity, double obliquity)
 	{
 		this.gridSpacing = gridSpacing;
 		this.gridColumns = SimulatedEarth.widthInDegrees / gridSpacing;
@@ -67,28 +74,99 @@ public class SimulatedEarth {
 		this.time = 0;
 		this.rotation = 0;
 		this.maxDelta = 0;
-		
+		this.eccentricity = orbitalEccentricity;
+		this.obliquity = obliquity;
+
 		return;
 	}
-	
-	/**
-	 * Gets a value representing the current state of the simulation
-	 * @return the current simulation state
-	 */
-	public SimState getCurrentSimulationState()
-	{
-		double[][] temperatureGrid = new double[this.gridRows][this.gridColumns];
 
-		for (int i = 0; i < this.gridRows; ++i)
-		{
-			for (int j = 0; j < this.gridColumns; ++j)
-			{
-				temperatureGrid[i][j] = this.earth[i][j].Temperature();
-			}
-		}	
-		
-		return new SimState(this.time, this.rotation, this.maxDelta, temperatureGrid);
+
+	private int timeSinceLastPerihelion (int time ){
+		return time % this.MINUTES_IN_YEAR;
 	}
+
+	/**
+	 * Computes mean anomaly of planet as radians
+	 * @return
+	 */
+	private double compute_mean_anomaly(int time){
+		return 2 * PI * (double) timeSinceLastPerihelion(time)/ (double) this.MINUTES_IN_YEAR;
+	}
+
+	/**
+	 * finds the eccentric_anomaly of the planet as radians
+	 *
+	 * @return
+	 */
+	private double computeEccentricAnomaly(int time, double eccentricity){
+		double meanAnomaly = compute_mean_anomaly(time);
+
+//
+// 		expression to solve
+//		meanAnomaly = x - MATH.E * sin( x );
+
+		double epsilon = 10e-16;
+
+		double root = 0 ;
+
+		// Newton-Raphson algorithm
+		for ( int i = 0 ; i < 10000 ; i += 1 ){
+			root = root -
+					(root - eccentricity * sin(root) - meanAnomaly)/
+							(1 - eccentricity * cos ( root ));
+			// check if the desired precision has been reached
+			if( abs(root - eccentricity * sin(root) - meanAnomaly) < epsilon ){
+				return root;
+			}
+		}
+		return root;
+	}
+
+	private double computeTrueAnomaly(int time, double eccentricity){
+		double eccentricAnomaly = computeEccentricAnomaly(time, eccentricity);
+
+		return acos(cos((eccentricAnomaly) - eccentricity) /
+						(1 - eccentricity * cos(eccentricAnomaly))
+		);
+
+	}
+
+	/**
+	 * returns the distance from the sun given a time
+	 * @param time
+	 * @param eccentricity
+	 * @return
+	 */
+	private double getSolarDistance(int time, double eccentricity){
+		return this.SEMIMAJOR_AXIS * ( 1 - pow(eccentricity,2 ) )/
+				(1 + eccentricity * cos( computeTrueAnomaly(time, eccentricity) ));
+	}
+
+	/**
+	 * calculates the proportion of radation the planet will receive at time compared to the amount at the parahelion
+	 * parahelion
+	 *
+	 * @param time
+	 * @return the proportion
+	 */
+	public double getProportionOfRadiation( int time ){
+		// distance at perihelion
+		double dist1 = getSolarDistance(0, this.eccentricity);
+		double dist2 = getSolarDistance( time , this.eccentricity);
+		return dist1/dist2;
+	}
+
+
+	public double computeNoonLatitude(int time){
+		double obliquityRad = this.obliquity * PI / 180;
+		return obliquityRad * sin( computeRotationalAngle(time) );
+	}
+
+
+	private double computeRotationalAngle( int time ){
+		return  ((double) (time - computeTimeEquinox()% this.MINUTES_IN_YEAR))
+	}
+
 	
 	/**
 	 * Simulates an interation of earth based on the time passed
@@ -96,11 +174,12 @@ public class SimulatedEarth {
 	 */
 	public void simulateIteration(int timePassed)
 	{
+		this.rotateGrid(this.degreesToRotate(timePassed));
 		this.heatPerIteration = timePassed * this.heatPerMinute;
-		this.diffuseHeatFromNeighbors();
+		this.heatPerIteration += this.diffuseHeatFromNeighbors();
 		this.heatGridFromSun();
 		this.CoolEarth(SimulatedEarth.heatPerIteration);
-		this.rotateGrid(this.degreesToRotate(timePassed));
+
 	}
 	
 	protected void CoolEarth(double heatGain)
@@ -109,18 +188,10 @@ public class SimulatedEarth {
 		{
 			for (int j = 0; j < this.gridColumns; ++j)
 			{
-//				this.earth[i][j].Temperature(this.earth[i][j].Temperature() 
-//												-
-//												(temperatureChange * this.earth[i][j].SurfaceArea()
-//												    /
-//												    SimulatedEarth.surfaceAreaOfEarth));
-				
-				
 				this.earth[i][j].Temperature( 
 						this.earth[i][j].Temperature()
 						- heatGain * this.earth[i][j].SurfaceArea() /SimulatedEarth.surfaceAreaOfEarth // this grid point's portion of the heat gained
 								/ this.earth[i][j].SurfaceArea() ) ; // divide heat by area to get temp.
-
 			}
 		}
 	}
@@ -219,10 +290,10 @@ public class SimulatedEarth {
 		double latitude = this.CalculateLatitude(i);
 
 		double verticalSideLength = SimulatedEarth.circumferenceOfEarth * this.proportionOfEquator;
-		double northSideLength = Math.cos(Math.toRadians(latitude + this.gridSpacing)) * verticalSideLength;
-		double southSideLength = Math.cos(Math.toRadians(latitude)) * verticalSideLength;
+		double northSideLength = cos(toRadians(latitude + this.gridSpacing)) * verticalSideLength;
+		double southSideLength = cos(toRadians(latitude)) * verticalSideLength;
 		
-		double height = Math.sqrt(verticalSideLength * verticalSideLength - .25 * (northSideLength - southSideLength) * (northSideLength - southSideLength));
+		double height = sqrt(verticalSideLength * verticalSideLength - .25 * (northSideLength - southSideLength) * (northSideLength - southSideLength));
 		double surfaceArea = .5 * (northSideLength + southSideLength) * height;
 		
 		double temperature = SimulatedEarth.initialCellTemperature;
@@ -242,7 +313,7 @@ public class SimulatedEarth {
 	protected double CalculateAngleForRadiation(int i, int j, double longitudeOfSun)
 	{
 		double longitudeFromSun = (this.CalculateLongitude(j) - longitudeOfSun) % SimulatedEarth.widthInDegrees;
-		return Math.abs(longitudeFromSun) < 90 ? Math.cos(Math.toRadians(longitudeFromSun)) * Math.cos(Math.toRadians(this.CalculateLatitude(i))) : 0;
+		return abs(longitudeFromSun) < 90 ? cos(toRadians(longitudeFromSun)) * cos(toRadians(this.CalculateLatitude(i))) : 0;
 	}
 	
 	protected EarthCell GetWestNeighbor(int i, int j)
