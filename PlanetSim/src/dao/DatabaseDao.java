@@ -1,5 +1,7 @@
 package dao;
 
+import java.util.List;
+
 import models.DatabaseQuery;
 import models.Experiment;
 
@@ -21,5 +23,7 @@ public interface DatabaseDao {
 	 * @param planet
 	 */
 	public void saveOrUpdate(Experiment planet);
+
+	public List<String> getExperimentNames();
 
 }
