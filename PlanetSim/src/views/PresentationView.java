@@ -7,6 +7,7 @@ import javax.swing.JTabbedPane;
 
 import dao.DatabaseDao;
 import dao.DatabaseDaoFlatImpl;
+import dao.DatabaseDaoSqlImpl;
 
 public class PresentationView extends JFrame {
 

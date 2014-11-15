@@ -2,6 +2,14 @@ package models;
 
 import java.util.Collection;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "experiment")
 public class Experiment {
 
 	private int experimentId;
@@ -10,6 +18,9 @@ public class Experiment {
 	private PhysicalFactors physicalFactors;
 	private CommandLineParam commandLineParam;
 
+	@Id
+	@GeneratedValue
+	@Column
 	public int getExperimentId() {
 		return experimentId;
 	}

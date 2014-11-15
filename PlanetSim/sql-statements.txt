@@ -1,0 +1,10 @@
+Table Functions 
+//TODO Turn this into a bash file.
+
+CREATE DATABASE planetsim CHARACTER SET = utf8 COLLATE = utf8_bin;
+
+create table experiment (
+	experiment_id bigint not null auto_increment,
+	
+	primary key (experiment_id)
+);

@@ -1,5 +1,6 @@
 package views;
 
+import static javax.swing.BorderFactory.createTitledBorder;
 import static util.GuiUtil.buildConstraints;
 import static util.GuiUtil.buildNumberFormatter;
 import static util.GuiUtil.getIntValue;
@@ -109,7 +110,7 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 	private JPanel newLatLongPanel() {
 		final JPanel latLongPanel = new JPanel();
 		latLongPanel.setLayout(new BoxLayout(latLongPanel, BoxLayout.Y_AXIS));
-		latLongPanel.setBorder(BorderFactory.createTitledBorder("Latitude/Longitudes"));
+		latLongPanel.setBorder(createTitledBorder("Latitudes/Longitudes"));
 
 		latLongPanel.add(buildCoordinatePanel("Coordinate One", inputCoordinateOneLatitude, inputCoordinateOneLongitude));
 		latLongPanel.add(buildCoordinatePanel("Coordinate Two", inputCoordinateTwoLatitude, inputCoordinateTwoLongitude));
@@ -153,7 +154,7 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 
 	private JPanel builTimePanel(final String title, final JComboBox hours, final JComboBox minutes) {
 		final JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createTitledBorder(title));
+		panel.setBorder(createTitledBorder(title));
 
 		panel.add(hours);
 		panel.add(new JLabel(":"));
@@ -163,18 +164,18 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 
 	private JPanel builDatePanel(final String title, final JComboBox years, final JComboBox months, final JComboBox days, final int startIndex) {
 		final JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createTitledBorder(title));
+		panel.setBorder(createTitledBorder(title));
 		updateDaysComboBox(days, years.getSelectedIndex(), months.getSelectedIndex());
 
 		months.addActionListener(this);
 		panel.add(months);
 
-		years.addActionListener(this);
-		panel.add(years);
-
 		days.addActionListener(this);
 		days.setSelectedIndex(startIndex);
 		panel.add(days);
+
+		years.addActionListener(this);
+		panel.add(years);
 
 		return panel;
 	}
@@ -240,7 +241,6 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 			databaseQuery.setCoordinateLongitudeTwo(getIntValue(inputCoordinateTwoLongitude));
 			databaseQuery.setStartDateTime(getDateFromComboBox(comboBoxFromYears, comboBoxFromMonths, comboBoxFromDays, comboBoxFromHours, comboBoxFromMinutes));
 			databaseQuery.setEndDateTime(getDateFromComboBox(comboBoxToYears, comboBoxToMonths, comboBoxToDays, comboBoxToHours, comboBoxToMinutes));
-			System.out.println("test");
 			resultsPanel.updateExpirement(dao.get(databaseQuery));
 		}
 	}
