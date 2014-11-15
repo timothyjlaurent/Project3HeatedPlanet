@@ -49,4 +49,12 @@ public class Experiment {
 	public void setCommandLineParam(final CommandLineParam commandLineParam) {
 		this.commandLineParam = commandLineParam;
 	}
+
+	public int getNumOfTimeSteps() {
+		return 5;
+	}
+
+	public int getNumOfRegions() {
+		return 5;
+	}
 }

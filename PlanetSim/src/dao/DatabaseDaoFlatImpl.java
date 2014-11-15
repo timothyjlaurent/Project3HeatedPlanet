@@ -9,7 +9,7 @@ import models.Experiment;
 public class DatabaseDaoFlatImpl implements DatabaseDao {
 
 	public Experiment get(final DatabaseQuery query) {
-		return null;
+		return new Experiment();
 	}
 
 	public void saveOrUpdate(final Experiment planet) {

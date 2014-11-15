@@ -1,27 +1,20 @@
 package models;
 
+import java.util.Date;
+
 public class GridPoints {
 
-	private String date;
-	private String time;
+	private Date dateTime;
 	private int topLatitude;
 	private int leftLatitude;
 	private Number temperature;
 
-	public String getDate() {
-		return date;
+	public Date getDateTime() {
+		return dateTime;
 	}
 
-	public void setDate(final String date) {
-		this.date = date;
-	}
-
-	public String getTime() {
-		return time;
-	}
-
-	public void setTime(final String time) {
-		this.time = time;
+	public void setDateTime(final Date dateTime) {
+		this.dateTime = dateTime;
 	}
 
 	public int getTopLatitude() {

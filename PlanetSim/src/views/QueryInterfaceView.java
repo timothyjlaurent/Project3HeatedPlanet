@@ -58,11 +58,13 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 
 	private final DatabaseDao dao;
 	private DatabaseQuery databaseQuery;
+	private final QueryResultsView resultsPanel = new QueryResultsView();
 
 	public QueryInterfaceView(final DatabaseDao dao) {
 		this.dao = dao;
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		add(resultsPanel);
 		add(buildQuerySettingsAndInfoPanel());
 		add(buildControlsPanel());
 	}
@@ -238,7 +240,8 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 			databaseQuery.setCoordinateLongitudeTwo(getIntValue(inputCoordinateTwoLongitude));
 			databaseQuery.setStartDateTime(getDateFromComboBox(comboBoxFromYears, comboBoxFromMonths, comboBoxFromDays, comboBoxFromHours, comboBoxFromMinutes));
 			databaseQuery.setEndDateTime(getDateFromComboBox(comboBoxToYears, comboBoxToMonths, comboBoxToDays, comboBoxToHours, comboBoxToMinutes));
-			dao.get(databaseQuery);
+			System.out.println("test");
+			resultsPanel.updateExpirement(dao.get(databaseQuery));
 		}
 	}
 
