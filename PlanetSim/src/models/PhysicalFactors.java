@@ -5,15 +5,15 @@ import constants.SimulationConstants;
 public class PhysicalFactors {
 
 	private double axialTilt = SimulationConstants.DEFAULT_AXIAL_TILT;
-	private double oribitalEccentricity = SimulationConstants.DEFAULT_ORBITAL_ECCENTRICITY;
+	private double orbitalEccentricity = SimulationConstants.DEFAULT_ORBITAL_ECCENTRICITY;
 
 	public PhysicalFactors() {
 
 	}
 
-	public PhysicalFactors(final double axialTilt, final double oribitalEccentricity) {
+	public PhysicalFactors(final double axialTilt, final double orbitalEccentricity) {
 		this.axialTilt = axialTilt;
-		this.oribitalEccentricity = oribitalEccentricity;
+		this.orbitalEccentricity = orbitalEccentricity;
 	}
 
 	public double getAxialTilt() {
@@ -24,12 +24,12 @@ public class PhysicalFactors {
 		this.axialTilt = axialTilt;
 	}
 
-	public double getOribitalEccentricity() {
-		return oribitalEccentricity;
+	public double getOrbitalEccentricity() {
+		return orbitalEccentricity;
 	}
 
-	public void setOribitalEccentricity(final double oribitalEccentricity) {
-		this.oribitalEccentricity = oribitalEccentricity;
+	public void setOrbitalEccentricity(final double orbitalEccentricity) {
+		this.orbitalEccentricity = orbitalEccentricity;
 	}
 
 }

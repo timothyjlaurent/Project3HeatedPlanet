@@ -5,11 +5,14 @@ public class SimulatedEarth {
 
 	private static int widthInDegrees = 360;
 	private static int heightInDegrees = 180;
-	private static int circumfrenceOfEarth = 40030140;
+	private static int circumferenceOfEarth = 40030140;
 	private static double surfaceAreaOfEarth = 510072000000000.0;
 	private static int initialCellTemperature = 288;
 	private static double degreesRotatedPerMinute = 360.0/1440.0;
-	private static double heatPerInteration = 5000;
+
+	private static double heatPerMinute = 5000 ;
+
+	private static double heatPerIteration ;
 	
 	private int gridSpacing;
 	
@@ -38,7 +41,7 @@ public class SimulatedEarth {
 	public double min;
 	public double stddev;
 	public double mean; 
-	public double heatgain;
+
 	
 	
 	/**
@@ -93,13 +96,14 @@ public class SimulatedEarth {
 	 */
 	public void simulateIteration(int timePassed)
 	{
+		this.heatPerIteration = timePassed * this.heatPerMinute;
+		this.diffuseHeatFromNeighbors();
+		this.heatGridFromSun();
+		this.CoolEarth(SimulatedEarth.heatPerIteration);
 		this.rotateGrid(this.degreesToRotate(timePassed));
-		this.heatGridFromSun();	
-		double temperatureChangeFromDiffusion = this.diffuseHeatFromNeighbors();
-		this.CoolEarth(SimulatedEarth.heatPerInteration + temperatureChangeFromDiffusion);
 	}
 	
-	protected void CoolEarth(double temperatureChange)
+	protected void CoolEarth(double heatGain)
 	{
 		for (int i = 0; i < this.gridRows; ++i)
 		{
@@ -114,12 +118,9 @@ public class SimulatedEarth {
 				
 				this.earth[i][j].Temperature( 
 						this.earth[i][j].Temperature()
-						- (heatgain) * this.earth[i][j].SurfaceArea()/SimulatedEarth.surfaceAreaOfEarth / this.earth[i][j].SurfaceArea() ) ;
-				
-				
-				
-				
-				
+						- heatGain * this.earth[i][j].SurfaceArea() /SimulatedEarth.surfaceAreaOfEarth // this grid point's portion of the heat gained
+								/ this.earth[i][j].SurfaceArea() ) ; // divide heat by area to get temp.
+
 			}
 		}
 	}
@@ -152,7 +153,9 @@ public class SimulatedEarth {
 	protected double diffuseHeatFromNeighbors()
 	{
 		double[][] newTemperatures = new double[this.gridRows][this.gridColumns];
-		
+
+		double heatChange = 0;
+
 		for (int i = 0; i < this.gridRows; ++i)
 		{
 			for (int j = 0; j < this.gridColumns; ++j)
@@ -161,26 +164,28 @@ public class SimulatedEarth {
 				double cellPerimeter = current.NorthSideLength() + current.SouthSideLength() + 2 * current.VerticalSideLength();
 				
 				double neighborTemp = (current.VerticalSideLength() / cellPerimeter) * this.GetEastNeighbor(i, j).Temperature();
-				neighborTemp = neighborTemp + (current.VerticalSideLength() / cellPerimeter) * this.GetWestNeighbor(i, j).Temperature();
-				neighborTemp = neighborTemp + (current.SouthSideLength() / cellPerimeter) * this.GetSouthNeighbor(i, j).Temperature();
-				neighborTemp = neighborTemp + (current.NorthSideLength() / cellPerimeter) * this.GetNorthNeighbor(i, j).Temperature();
+				neighborTemp += (current.VerticalSideLength() / cellPerimeter) * this.GetWestNeighbor(i, j).Temperature();
+				neighborTemp += (current.SouthSideLength() / cellPerimeter) * this.GetSouthNeighbor(i, j).Temperature();
+				neighborTemp += (current.NorthSideLength() / cellPerimeter) * this.GetNorthNeighbor(i, j).Temperature();
 
-				newTemperatures[i][j] = (neighborTemp + current.Temperature()) / 2;
+
+				newTemperatures[i][j] = (neighborTemp + current.Temperature())/2;
+
+				heatChange += ( newTemperatures[i][j] * current.SurfaceArea() ) - current.Temperature() * current.SurfaceArea();
+
 			}
 		}		
-		
-		double temperatureChange = 0;
 
 		for (int i = 0; i < this.gridRows; ++i)
 		{
 			for (int j = 0; j < this.gridColumns; ++j)
 			{
-				temperatureChange = newTemperatures[i][j] - this.earth[i][j].Temperature();
+//				temperatureChange = newTemperatures[i][j] - this.earth[i][j].Temperature();
 				this.earth[i][j].Temperature(newTemperatures[i][j]);
 			}
 		}
 		
-		return temperatureChange;
+		return heatChange;
 	}
 	
 	protected void heatGridFromSun()
@@ -190,9 +195,9 @@ public class SimulatedEarth {
 		{
 			for (int j = 0; j < this.gridColumns; ++j)
 			{	
-				this.earth[i][j].Temperature(this.earth[i][j].Temperature() + SimulatedEarth.heatPerInteration * this.earth[i][j].PercentOfRadiation());
+				this.earth[i][j].Temperature(this.earth[i][j].Temperature() + SimulatedEarth.heatPerIteration * this.earth[i][j].PercentOfRadiation());
 				
-				heatgain += this.earth[i][j].SurfaceArea() * SimulatedEarth.heatPerInteration * this.earth[i][j].PercentOfRadiation() ;
+				heatgain += this.earth[i][j].SurfaceArea() * SimulatedEarth.heatPerIteration * this.earth[i][j].PercentOfRadiation() ;
 				
 			}
 		}
@@ -213,7 +218,7 @@ public class SimulatedEarth {
 	{
 		double latitude = this.CalculateLatitude(i);
 
-		double verticalSideLength = SimulatedEarth.circumfrenceOfEarth * this.proportionOfEquator;
+		double verticalSideLength = SimulatedEarth.circumferenceOfEarth * this.proportionOfEquator;
 		double northSideLength = Math.cos(Math.toRadians(latitude + this.gridSpacing)) * verticalSideLength;
 		double southSideLength = Math.cos(Math.toRadians(latitude)) * verticalSideLength;
 		

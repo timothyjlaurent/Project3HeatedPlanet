@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Project 2 Submission - Team 10/Heated-Earth-master/HeatedEarth/HeatedEarth.iml" filepath="$PROJECT_DIR$/Project 2 Submission - Team 10/Heated-Earth-master/HeatedEarth/HeatedEarth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/PlanetSim/PlanetSim.iml" filepath="$PROJECT_DIR$/PlanetSim/PlanetSim.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Project 2 Submission - Team 3/Project 2 Submission - Team 3.iml" filepath="$PROJECT_DIR$/Project 2 Submission - Team 3/Project 2 Submission - Team 3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Project3HeatedPlanet.iml" filepath="$PROJECT_DIR$/Project3HeatedPlanet.iml" />
+    </modules>
+  </component>
+</project>
