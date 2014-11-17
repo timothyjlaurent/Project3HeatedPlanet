@@ -15,7 +15,10 @@ public class SimulationConstants {
 	final public static int DEFAULT_DATA_PRECISION = 8;
 	final public static int DEFAULT_GEOGRAPHIC_PRECISION = 100;
 	final public static int DEFAULT_TEMPORAL_PRECISION = 100;
+	public static final double SEMIMAJOR_AXIS = 149600000;
 
 
-
+	public static final double  ARGUMENT_OF_PERIAPSIS = 114 ; //degrees
+	//	private static final int MINUTES_IN_YEAR = 525600;
+	public static final int MINUTES_IN_YEAR = 525949;  // this accounts for leap years
 }
