@@ -174,8 +174,8 @@ public class SimulatedEarth {
 	 * @param time
 	 * @return
 	 */
-	public static double computeSunNoonLongitude(int time ){
-		return time % 1440 * 360.0 / 1400;
+	public static double computeSunNoonLongitude(double time ){
+		return time % 1440 * 360.0 / 1440;
 	}
 
 
