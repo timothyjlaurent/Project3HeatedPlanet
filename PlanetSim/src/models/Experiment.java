@@ -50,6 +50,14 @@ public class Experiment {
 		this.commandLineParam = commandLineParam;
 	}
 
+	public int getNumOfTimeSteps() {
+		return 5;
+	}
+
+	public int getNumOfRegions() {
+		return 5;
+	}
+
 
 
 }

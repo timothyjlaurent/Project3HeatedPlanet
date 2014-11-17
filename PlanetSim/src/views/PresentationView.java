@@ -16,7 +16,9 @@ public class PresentationView extends JFrame {
 		final PresentationView view = new PresentationView(new DatabaseDaoFlatImpl());
 		view.setName("Heat Planet Simulation");
 		view.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		view.setPreferredSize(new Dimension(1000, 500));
+		view.setPreferredSize(new Dimension(1000, 800));
+		view.setMaximumSize(new Dimension(1000, 800));
+		view.setResizable(false);
 		view.pack();
 		view.setVisible(true);
 	}
