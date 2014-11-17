@@ -33,7 +33,6 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 		} catch (Throwable ex) {
 			System.out.println(ex);
 		}
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -52,16 +51,17 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<String> getExperimentNames() {
-//		System.out.println(sessionFactory);
-//		session = sessionFactory.openSession();
-//		session.beginTransaction();
-//		
+		System.out.println(sessionFactory);
+		session = sessionFactory.openSession();
+		session.beginTransaction();
+		
 //		Query query = session.createQuery("select name from experiment");	
-//		List<String> list = (List<String>) query.list();
-//		
-//		session.close();
-//		return list.isEmpty() ? new ArrayList<String>() : list;
-		return new ArrayList<String>();
+        Query query = session.createQuery("from " + Experiment.class.getName());
+
+		List<Experiment> list = (List<Experiment>) query.list();
+		
+		session.close();
+		return list.isEmpty() ? new ArrayList<String>() : new ArrayList<String>();
 	}
 
 }

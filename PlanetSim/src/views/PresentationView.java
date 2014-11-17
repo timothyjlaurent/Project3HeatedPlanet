@@ -14,7 +14,7 @@ public class PresentationView extends JFrame {
 	private static final long serialVersionUID = 1L;
 
 	public static void main(final String[] args) {
-		final PresentationView view = new PresentationView(new DatabaseDaoFlatImpl());
+		final PresentationView view = new PresentationView(new DatabaseDaoSqlImpl());
 		view.setName("Heat Planet Simulation");
 		view.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		view.setPreferredSize(new Dimension(1000, 800));

@@ -6,21 +6,32 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
-@Table(name = "experiment")
+@Table(name = "EXPERIMENT")
 public class Experiment {
-
-	private int experimentId;
-	private Collection<GridPoints> gridPoints;
-	private SimulationSettings simulationSettings;
-	private PhysicalFactors physicalFactors;
-	private CommandLineParam commandLineParam;
 
 	@Id
 	@GeneratedValue
-	@Column
+	@Column (name = "EXPERIMENT_ID")
+	private int experimentId;
+	
+	@Transient
+	private Collection<GridPoints> gridPoints;
+	
+	@OneToOne
+	private SimulationSettings simulationSettings;
+	
+	@Transient
+	private PhysicalFactors physicalFactors;
+	
+	@Transient
+	private CommandLineParam commandLineParam;
+
 	public int getExperimentId() {
 		return experimentId;
 	}
