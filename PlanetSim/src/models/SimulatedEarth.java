@@ -2,7 +2,6 @@ package models;
 
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 import static java.lang.Math.*;
@@ -24,7 +23,7 @@ public class SimulatedEarth {
 //	private static final int MINUTES_IN_YEAR = 525600;
 	private static final int MINUTES_IN_YEAR = 525949;  // this accounts for leap years
 	private static double eccentricity;
-	private static final double SEMIMAJOR_AXIS = 149600000;
+	public static final double SEMIMAJOR_AXIS = 149600000;
 	private static double obliquity;
 	private double timeEquinox ;
 
@@ -129,7 +128,7 @@ public class SimulatedEarth {
 	private double computeTrueAnomaly(int time, double eccentricity){
 		double eccentricAnomaly = computeEccentricAnomaly(time, eccentricity);
 
-		return acos(cos((eccentricAnomaly) - eccentricity) /
+		return acos((cos(eccentricAnomaly) - eccentricity) /
 						(1 - eccentricity * cos(eccentricAnomaly))
 		);
 
@@ -415,7 +414,7 @@ public class SimulatedEarth {
 	 *
 	 * @param longitudeOfSun
 	 * @param longitudeOfPoint
-	 * @return The
+	 * @return Thee
 	 */
 	private double calculateLocalHourAngle(double longitudeOfSun, double longitudeOfPoint){
 
