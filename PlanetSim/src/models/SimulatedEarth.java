@@ -21,10 +21,16 @@ public class SimulatedEarth {
 	private static double heatPerIteration ;
 	private static final Calendar START_DATE = new GregorianCalendar(2000,0,4,0,0);
 	private static int time = 0 ; // time in minutes
-	private static final int MINUTES_IN_YEAR = 525600;
+//	private static final int MINUTES_IN_YEAR = 525600;
+	private static final int MINUTES_IN_YEAR = 525949;  // this accounts for leap years
 	private static double eccentricity;
 	private static final double SEMIMAJOR_AXIS = 149600000;
 	private static double obliquity;
+	private double timeEquinox ;
+
+	private static double solarConstant = 1  ; 	// this is the solar constant of energy per unit
+												// time and unit area to hit the earth that is perpendicular
+												// the sun.
 
 	private int gridSpacing;
 	protected int gridRows;
@@ -90,7 +96,7 @@ public class SimulatedEarth {
 	 * @return
 	 */
 	private double compute_mean_anomaly(int time){
-		return 2 * PI * (double) timeSinceLastPerihelion(time)/ (double) this.MINUTES_IN_YEAR;
+		return 2 * PI * timeSinceLastPerihelion(time)/ this.MINUTES_IN_YEAR;
 	}
 
 	/**
@@ -100,13 +106,11 @@ public class SimulatedEarth {
 	 */
 	private double computeEccentricAnomaly(int time, double eccentricity){
 		double meanAnomaly = compute_mean_anomaly(time);
-
 //
 // 		expression to solve
 //		meanAnomaly = x - MATH.E * sin( x );
 
 		double epsilon = 10e-16;
-
 		double root = 0 ;
 
 		// Newton-Raphson algorithm
@@ -131,6 +135,9 @@ public class SimulatedEarth {
 
 	}
 
+	private double computeTrueAnomaly(int time ) {
+		return this.computeTrueAnomaly( time , this.eccentricity );
+	}
 	/**
 	 * returns the distance from the sun given a time
 	 * @param time
@@ -143,55 +150,115 @@ public class SimulatedEarth {
 	}
 
 	/**
-	 * calculates the proportion of radation the planet will receive at time compared to the amount at the parahelion
+	 * calculates the proportion of radiation the planet will receive at time compared to the amount at the parahelion
 	 * parahelion
 	 *
 	 * @param time
 	 * @return the proportion
 	 */
-	public double getProportionOfRadiation( int time ){
+	public double getDistanceRadiationAdjustment( int time ){
 		// distance at perihelion
 		double dist1 = getSolarDistance(0, this.eccentricity);
 		double dist2 = getSolarDistance( time , this.eccentricity);
-		return dist1/dist2;
+		return pow(dist1,2)/pow(dist2,2);
+	}
+
+	/**
+	 *Computes sun latitude as a function of time
+	 * @param time
+	 * @return
+	 */
+	public double computeSunNoonLatitude(int time){
+		return toDegrees( toRadians( obliquity ) * sin( computeRotationalAngle( time ) ) );
+	}
+
+	/**
+	 * Computes the sun longitude as a function of time .
+	 * @param time
+	 * @return
+	 */
+	public double computeSunNoonLongitude(int time ){
+		return time % 1440 * 360.0 / 1400;
 	}
 
 
-	public double computeNoonLatitude(int time){
-		double obliquityRad = this.obliquity * PI / 180;
-		return obliquityRad * sin( computeRotationalAngle(time) );
-	}
-
-
+	/**
+	 *
+	 * @param time
+	 * @return angle of rotation in radians
+	 */
 	private double computeRotationalAngle( int time ){
-		return  ((double) (time - computeTimeEquinox()% this.MINUTES_IN_YEAR))
+		return  ( (time - computeTimeEquinox())% this.MINUTES_IN_YEAR) * 2.0 * PI / MINUTES_IN_YEAR;
+	}
+
+
+	private double radToDeg( double rad ){
+		return rad * 180.0 / PI ;
+	}
+
+	private int computeTimeEquinox(){
+		// solve for t
+		if ( (Double) this.timeEquinox == null ) {
+			double precision = 0.0015;  		// degrees
+			int t1 = 0;						// minutes
+			int t2 = MINUTES_IN_YEAR / 2;	// minutes
+
+			int t = (t2 - t1)/2 ;			// starting time to test
+
+			double difference = radToDeg( this.computeTrueAnomaly(t)) - this.ARGUMENT_OF_PERIAPSIS ; // degree difference
+
+			while ( abs(difference) < precision ) {
+
+				if ( difference < 0 ){
+//					guessed under
+					t1 = t + 1;
+				} else {
+//					guessed over
+					t2 = t - 1;
+				}
+
+				t = (t2 - t1)/2;
+
+				difference = radToDeg(this.computeTrueAnomaly(t)) - this.ARGUMENT_OF_PERIAPSIS ;
+			}
+			this.timeEquinox = t;
+		}
+		return (int) this.timeEquinox;
 	}
 
 	
 	/**
-	 * Simulates an interation of earth based on the time passed
+	 * Simulates an iteration of earth based on the time passed
 	 * @param timePassed
 	 */
 	public void simulateIteration(int timePassed)
 	{
 		this.rotateGrid(this.degreesToRotate(timePassed));
-		this.heatPerIteration = timePassed * this.heatPerMinute;
-		this.heatPerIteration += this.diffuseHeatFromNeighbors();
-		this.heatGridFromSun();
+		this.heatPerIteration = this.diffuseHeatFromNeighbors();
+		this.heatPerIteration += this.heatGridFromSun(timePassed);
 		this.CoolEarth(SimulatedEarth.heatPerIteration);
 
 	}
 	
 	protected void CoolEarth(double heatGain)
 	{
+
+		// this is used to get the heat
+		double totalPlanetHeat = SimulatedEarth.surfaceAreaOfEarth * 288.0 + heatGain ;
+
 		for (int i = 0; i < this.gridRows; ++i)
 		{
 			for (int j = 0; j < this.gridColumns; ++j)
 			{
-				this.earth[i][j].Temperature( 
+
+//				The heat lost by this trapezoid according to its area and temp
+				double heatLoss = this.earth[i][j].SurfaceArea() * this.earth[i][j].Temperature() 	// heat in this grid point
+									/ totalPlanetHeat    											// total heat in the world
+									* heatGain ;
+
+				this.earth[i][j].Temperature(
 						this.earth[i][j].Temperature()
-						- heatGain * this.earth[i][j].SurfaceArea() /SimulatedEarth.surfaceAreaOfEarth // this grid point's portion of the heat gained
-								/ this.earth[i][j].SurfaceArea() ) ; // divide heat by area to get temp.
+						- heatLoss / this.earth[i][j].SurfaceArea() ); // divide heat by area to get temp
 			}
 		}
 	}
@@ -199,26 +266,26 @@ public class SimulatedEarth {
 	protected void rotateGrid(double degrees)
 	{
 		this.rotation = (this.rotation + degrees) % SimulatedEarth.widthInDegrees;
-		double totalAngles = 0.0;
+//		double totalAngles = 0.0;
 		
-		for (int i = 0; i < this.gridRows; ++i)
-		{
-			for (int j = 0; j < this.gridColumns; ++j)
-			{
-				totalAngles = this.CalculateAngleForRadiation(i, j, this.rotation) + totalAngles;
-			}
-		}
-
-		for (int i = 0; i < this.gridRows; ++i)
-		{
-			for (int j = 0; j < this.gridColumns; ++j)
-			{	
-				this.earth[i][j].PercentOfRadiation( 
-						(this.CalculateAngleForRadiation(i, j, this.rotation) * this.earth[i][j].SurfaceArea())
-						/
-						(totalAngles * SimulatedEarth.surfaceAreaOfEarth));
-			}
-		}
+//		for (int i = 0; i < this.gridRows; ++i)
+//		{
+//			for (int j = 0; j < this.gridColumns; ++j)
+//			{
+//				totalAngles = this.CalculateAngleForRadiation(i, j, this.rotation) + totalAngles;
+//			}
+//		}
+//
+//		for (int i = 0; i < this.gridRows; ++i)
+//		{
+//			for (int j = 0; j < this.gridColumns; ++j)
+//			{
+//				this.earth[i][j].PercentOfRadiation(
+//						(this.CalculateAngleForRadiation(i, j, this.rotation) * this.earth[i][j].SurfaceArea())
+//						/
+//						(totalAngles * SimulatedEarth.surfaceAreaOfEarth));
+//			}
+//		}
 	}
 	
 	protected double diffuseHeatFromNeighbors()
@@ -259,19 +326,25 @@ public class SimulatedEarth {
 		return heatChange;
 	}
 	
-	protected void heatGridFromSun()
+	protected double heatGridFromSun(int minutes )
 	{
-		heatgain = 0 ;
+		double proportionRadiation = getDistanceRadiationAdjustment(this.time);
+		double longitudeOfSun = computeSunNoonLongitude(this.time);
+		double latitudeOfSun = computeSunNoonLatitude(this.time);
+
+		double heatgain = 0 ;
 		for (int i = 0; i < this.gridRows; ++i)
 		{
 			for (int j = 0; j < this.gridColumns; ++j)
 			{	
-				this.earth[i][j].Temperature(this.earth[i][j].Temperature() + SimulatedEarth.heatPerIteration * this.earth[i][j].PercentOfRadiation());
-				
-				heatgain += this.earth[i][j].SurfaceArea() * SimulatedEarth.heatPerIteration * this.earth[i][j].PercentOfRadiation() ;
-				
+				double zenithAngle = calculateSolarZenith( i , j , longitudeOfSun , latitudeOfSun );
+				double tempIncrease = cos( zenithAngle ) >  0 ? this.solarConstant * proportionRadiation * cos( zenithAngle ) * minutes : 0 ;
+				heatgain += this.earth[i][j].SurfaceArea() * tempIncrease ;
+				this.earth[i][j].Temperature( this.earth[i][j].Temperature() + tempIncrease );
 			}
 		}
+
+		return heatgain;
 	}
 	
 	protected double degreesToRotate (int timePassed)
@@ -315,7 +388,41 @@ public class SimulatedEarth {
 		double longitudeFromSun = (this.CalculateLongitude(j) - longitudeOfSun) % SimulatedEarth.widthInDegrees;
 		return abs(longitudeFromSun) < 90 ? cos(toRadians(longitudeFromSun)) * cos(toRadians(this.CalculateLatitude(i))) : 0;
 	}
-	
+
+	private double calculateSolarZenith( int i , int j, double longitudeOfSun, double latitudeOfSun ){
+//		double longitudeFromSun = (this.CalculateLongitude(j) - longitudeOfSun ) % SimulatedEarth.widthInDegrees ;
+//		double latitudeFromSun = (this.CalculateLatitude(i) );
+		double hourAngle = toRadians(calculateLocalHourAngle(longitudeOfSun, this.CalculateLongitude(j)));
+
+		double declinationOfSun = toRadians( latitudeOfSun );
+
+		double pointLatitude = toRadians( CalculateLatitude(i) );
+
+		// Solar_zenith_angle  http://en.wikipedia.org/wiki/Solar_zenith_angle
+		double solarElevationAngle = asin(
+										cos( hourAngle ) *
+										cos( declinationOfSun ) *
+										cos( pointLatitude ) +
+										sin( declinationOfSun ) *
+										sin( pointLatitude )) ;
+
+		double solarZenithAngle = PI / 2 - solarElevationAngle ;
+
+		return solarZenithAngle;
+	}
+
+	/**
+	 *
+	 * @param longitudeOfSun
+	 * @param longitudeOfPoint
+	 * @return The
+	 */
+	private double calculateLocalHourAngle(double longitudeOfSun, double longitudeOfPoint){
+
+		return (longitudeOfPoint - longitudeOfSun);
+
+	}
+
 	protected EarthCell GetWestNeighbor(int i, int j)
 	{
 		return this.earth[i][(j + 1) % this.gridColumns];
