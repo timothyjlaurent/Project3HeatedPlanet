@@ -11,51 +11,34 @@ import static java.lang.Math.sqrt;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
-import constants.SimulationConstants;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import constants.SimulationConstants;
+
 public class SimulatedEarth {
 
-	private static int widthInDegrees = 360;
-	private static int heightInDegrees = 180;
-	private static int circumferenceOfEarth = 40030140;
-	private static double surfaceAreaOfEarth = 510072000000000.0;
-	private static int initialCellTemperature = 288;
-	private static double degreesRotatedPerMinute = 360.0 / 1440.0;
-	private static double heatPerMinute = 5000;
-<<<<<<< HEAD
-	private static final double ARGUMENT_OF_PERIAPSIS = 114; // degrees
-	private static double heatPerIteration;
+	private final static int widthInDegrees = 360;
+	private final static int heightInDegrees = 180;
+	private final static int circumferenceOfEarth = 40030140;
+	private final static double surfaceAreaOfEarth = 510072000000000.0;
+	private final static int initialCellTemperature = 288;
+	private final static double degreesRotatedPerMinute = 360.0 / 1440.0;
+	private final static double heatPerMinute = 5000;
 	private static final Calendar START_DATE = new GregorianCalendar(2000, 0,
 			4, 0, 0);
 	private static int time = 0; // time in minutes
-	// private static final int MINUTES_IN_YEAR = 525600;
-	private static final int MINUTES_IN_YEAR = 525949; // this accounts for leap
 	private static double solarConstant = 1; // this is the solar constant of
 	// energy per unit
 	// time and unit area to hit the
 	// earth that is perpendicular
 	// the sun.
-	// years
-	private static final double SEMIMAJOR_AXIS = 149600000;
-	private static double obliquity;
-	private double timeEquinox;
-	private static double eccentricity;
-=======
-	private static double heatPerIteration ;
-	private static final Calendar START_DATE = new GregorianCalendar(2000,0,4,0,0);
-	private static int time = 0 ; // time in minutes
+
+	private static double heatPerIteration;
 	private static double eccentricity;
 	public static double obliquity;
-	private static Integer timeEquinox ;
-
-	private static double solarConstant = 1  ; 	// this is the solar constant of energy per unit
-												// time and unit area to hit the earth that is perpendicular
-												// the sun.
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
+	private static Integer timeEquinox;
 
 	private int gridSpacing;
 	protected int gridRows;
@@ -108,14 +91,8 @@ public class SimulatedEarth {
 		return;
 	}
 
-<<<<<<< HEAD
-	private int timeSinceLastPerihelion(int time) {
-		return time % this.MINUTES_IN_YEAR;
-=======
-
-	private static int timeSinceLastPerihelion (int time ){
+	private static int timeSinceLastPerihelion(int time) {
 		return time % SimulationConstants.MINUTES_IN_YEAR;
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
 	}
 
 	/**
@@ -123,13 +100,9 @@ public class SimulatedEarth {
 	 * 
 	 * @return
 	 */
-<<<<<<< HEAD
-	private double compute_mean_anomaly(int time) {
-		return 2 * PI * timeSinceLastPerihelion(time) / this.MINUTES_IN_YEAR;
-=======
-	private static double compute_mean_anomaly(int time){
-		return 2 * PI * timeSinceLastPerihelion(time)/ SimulationConstants.MINUTES_IN_YEAR;
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
+	private static double compute_mean_anomaly(int time) {
+		return 2 * PI * timeSinceLastPerihelion(time)
+				/ SimulationConstants.MINUTES_IN_YEAR;
 	}
 
 	/**
@@ -137,11 +110,7 @@ public class SimulatedEarth {
 	 * 
 	 * @return
 	 */
-<<<<<<< HEAD
-	private double computeEccentricAnomaly(int time, double eccentricity) {
-=======
-	private static double computeEccentricAnomaly(int time, double eccentricity){
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
+	private static double computeEccentricAnomaly(int time, double eccentricity) {
 		double meanAnomaly = compute_mean_anomaly(time);
 		//
 		// expression to solve
@@ -162,20 +131,11 @@ public class SimulatedEarth {
 		return root;
 	}
 
-<<<<<<< HEAD
-	private double computeTrueAnomaly(int time, double eccentricity) {
+	private static double computeTrueAnomaly(int time, double eccentricity) {
 		double eccentricAnomaly = computeEccentricAnomaly(time, eccentricity);
 
-		return acos(cos((eccentricAnomaly) - eccentricity)
+		return acos((cos(eccentricAnomaly) - eccentricity)
 				/ (1 - eccentricity * cos(eccentricAnomaly)));
-=======
-	private static double computeTrueAnomaly(int time, double eccentricity){
-		double eccentricAnomaly = computeEccentricAnomaly(time, eccentricity);
-
-		return acos((cos(eccentricAnomaly) - eccentricity) /
-						(1 - eccentricity * cos(eccentricAnomaly))
-		);
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
 
 	}
 
@@ -190,17 +150,11 @@ public class SimulatedEarth {
 	 * @param eccentricity
 	 * @return
 	 */
-<<<<<<< HEAD
-	private double getSolarDistance(int time, double eccentricity) {
-		return this.SEMIMAJOR_AXIS
+	private static double getSolarDistance(int time, double eccentricity) {
+		return SimulationConstants.SEMIMAJOR_AXIS
 				* (1 - pow(eccentricity, 2))
 				/ (1 + eccentricity
 						* cos(computeTrueAnomaly(time, eccentricity)));
-=======
-	private static double getSolarDistance(int time, double eccentricity){
-		return SimulationConstants.SEMIMAJOR_AXIS * ( 1 - pow(eccentricity,2 ) )/
-				(1 + eccentricity * cos( computeTrueAnomaly(time, eccentricity) ));
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
 	}
 
 	/**
@@ -210,19 +164,11 @@ public class SimulatedEarth {
 	 * @param time
 	 * @return the proportion
 	 */
-<<<<<<< HEAD
-	public double getDistanceRadiationAdjustment(int time) {
-		// distance at perihelion
-		double dist1 = getSolarDistance(0, this.eccentricity);
-		double dist2 = getSolarDistance(time, this.eccentricity);
-		return pow(dist1, 2) / pow(dist2, 2);
-=======
-	public static double getDistanceRadiationAdjustment( int time ){
+	public static double getDistanceRadiationAdjustment(int time) {
 		// distance at perihelion
 		double dist1 = getSolarDistance(0, eccentricity);
-		double dist2 = getSolarDistance( time , eccentricity);
-		return pow(dist1,2)/pow(dist2,2);
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
+		double dist2 = getSolarDistance(time, eccentricity);
+		return pow(dist1, 2) / pow(dist2, 2);
 	}
 
 	/**
@@ -242,13 +188,8 @@ public class SimulatedEarth {
 	 * @param time
 	 * @return
 	 */
-<<<<<<< HEAD
-	public double computeSunNoonLongitude(int time) {
-		return time % 1440 * 360.0 / 1400;
-=======
-	public static double computeSunNoonLongitude(double time ){
+	public static double computeSunNoonLongitude(double time) {
 		return time % 1440 * 360.0 / 1440;
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
 	}
 
 	/**
@@ -256,50 +197,26 @@ public class SimulatedEarth {
 	 * @param time
 	 * @return angle of rotation in radians
 	 */
-<<<<<<< HEAD
 	private double computeRotationalAngle(int time) {
-		return ((time - computeTimeEquinox()) % this.MINUTES_IN_YEAR) * 2.0
-				* PI / MINUTES_IN_YEAR;
+		return ((time - computeTimeEquinox()) % SimulationConstants.MINUTES_IN_YEAR)
+				* 2.0 * PI / SimulationConstants.MINUTES_IN_YEAR;
 	}
 
-	private double radToDeg(double rad) {
-		return rad * 180.0 / PI;
-	}
-
-	private int computeTimeEquinox() {
+	public int computeTimeEquinox() {
 		// solve for t
-		if ((Double) this.timeEquinox == null) {
+
+		if (timeEquinox == null) {
 			double precision = 0.0015; // degrees
 			int t1 = 0; // minutes
-			int t2 = MINUTES_IN_YEAR / 2; // minutes
+			int t2 = SimulationConstants.MINUTES_IN_YEAR / 2; // minutes
 
-			int t = (t2 - t1) / 2; // starting time to test
+			int t = (t2 - t1) / 2 + t1; // starting time to test
 
-			double difference = radToDeg(this.computeTrueAnomaly(t))
-					- this.ARGUMENT_OF_PERIAPSIS; // degree difference
+			double difference = toDegrees(this.computeTrueAnomaly(t))
+					- SimulationConstants.ARGUMENT_OF_PERIAPSIS; // degree
+																	// difference
 
-			while (abs(difference) < precision) {
-=======
-	private double computeRotationalAngle( int time ){
-		return  ( (time - computeTimeEquinox())% SimulationConstants.MINUTES_IN_YEAR) * 2.0 * PI / SimulationConstants.MINUTES_IN_YEAR;
-	}
-
-
-
-	public int computeTimeEquinox(){
-		// solve for t
-
-		if ( timeEquinox == null ) {
-			double precision = 0.0015;  		// degrees
-			int t1 = 0;						// minutes
-			int t2 = SimulationConstants.MINUTES_IN_YEAR / 2;	// minutes
-
-			int t = (t2 - t1)/2 + t1 ;			// starting time to test
-
-			double difference = toDegrees( this.computeTrueAnomaly(t)) - SimulationConstants.ARGUMENT_OF_PERIAPSIS ; // degree difference
-
-			while ( abs(difference) > precision ) {
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
+			while (abs(difference) > precision) {
 
 				if (difference < 0) {
 					// guessed under
@@ -309,20 +226,14 @@ public class SimulatedEarth {
 					t2 = t - 1;
 				}
 
-<<<<<<< HEAD
-				t = (t2 - t1) / 2;
+				t = (t2 - t1) / 2 + t1;
 
-				difference = radToDeg(this.computeTrueAnomaly(t))
-						- this.ARGUMENT_OF_PERIAPSIS;
-=======
-				t = (t2 - t1)/2 + t1;
-
-				difference = toDegrees(this.computeTrueAnomaly(t)) - SimulationConstants.ARGUMENT_OF_PERIAPSIS ;
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
+				difference = toDegrees(this.computeTrueAnomaly(t))
+						- SimulationConstants.ARGUMENT_OF_PERIAPSIS;
 			}
 			this.timeEquinox = t;
 		}
-		return (int) this.timeEquinox;
+		return this.timeEquinox;
 	}
 
 	/**
@@ -370,6 +281,28 @@ public class SimulatedEarth {
 	protected void rotateGrid(double degrees) {
 		this.rotation = (this.rotation + degrees)
 				% SimulatedEarth.widthInDegrees;
+		// double totalAngles = 0.0;
+
+		// for (int i = 0; i < this.gridRows; ++i)
+		// {
+		// for (int j = 0; j < this.gridColumns; ++j)
+		// {
+		// totalAngles = this.CalculateAngleForRadiation(i, j, this.rotation) +
+		// totalAngles;
+		// }
+		// }
+		//
+		// for (int i = 0; i < this.gridRows; ++i)
+		// {
+		// for (int j = 0; j < this.gridColumns; ++j)
+		// {
+		// this.earth[i][j].PercentOfRadiation(
+		// (this.CalculateAngleForRadiation(i, j, this.rotation) *
+		// this.earth[i][j].SurfaceArea())
+		// /
+		// (totalAngles * SimulatedEarth.surfaceAreaOfEarth));
+		// }
+		// }
 	}
 
 	protected double diffuseHeatFromNeighbors() {
@@ -432,14 +365,8 @@ public class SimulatedEarth {
 
 		return heatgain;
 	}
-<<<<<<< HEAD
 
-	protected double degreesToRotate(int timePassed) {
-=======
-	
-	public double degreesToRotate(int timePassed)
-	{
->>>>>>> 3f891dc8dad6fea78ca0e40c59d9326cdae30228
+	public double degreesToRotate(int timePassed) {
 		return SimulatedEarth.degreesRotatedPerMinute * timePassed;
 	}
 
@@ -510,24 +437,22 @@ public class SimulatedEarth {
 		return solarZenithAngle;
 	}
 
-
-
-	public double[] getSimStats(){
+	public double[] getSimStats() {
 		ArrayList<Double> temps = new ArrayList<Double>();
 		double min = Double.POSITIVE_INFINITY;
 		double max = Double.NEGATIVE_INFINITY;
-		double sum = 0 ;
+		double sum = 0;
 		double mean;
 		double stdev;
 
-		for( int i = 0 ; i < this.earth.length ; i += 1 ){
-			for ( int j = 0 ; j < this.earth[0].length; j += 1 ){
+		for (int i = 0; i < this.earth.length; i += 1) {
+			for (int j = 0; j < this.earth[0].length; j += 1) {
 				double cur = this.earth[i][j].Temperature();
 
-				if ( cur < min ){
+				if (cur < min) {
 					min = cur;
 				}
-				if ( cur > max ){
+				if (cur > max) {
 					max = cur;
 				}
 
@@ -539,20 +464,19 @@ public class SimulatedEarth {
 
 		mean = sum / temps.size();
 
-		stdev = stdDev( temps , mean );
+		stdev = stdDev(temps, mean);
 
-		double ret[] = {min, max, mean, stdev };
+		double ret[] = { min, max, mean, stdev };
 		return ret;
 
 	}
 
-
-	public double stdDev(ArrayList<Double> list, double mean){
-		double temp = 0 ;
-		for ( double d : list ){
-			temp += (mean - d ) * (mean -d);
+	public double stdDev(ArrayList<Double> list, double mean) {
+		double temp = 0;
+		for (double d : list) {
+			temp += (mean - d) * (mean - d);
 		}
-		return sqrt( temp/ list.size() );
+		return sqrt(temp / list.size());
 	}
 
 	/**
