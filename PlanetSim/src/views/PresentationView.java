@@ -1,30 +1,16 @@
 package views;
 
-import java.awt.Dimension;
-
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 
+import models.CommandLineParam;
 import dao.DatabaseDao;
-import dao.DatabaseDaoFlatImpl;
-import dao.DatabaseDaoSqlImpl;
 
 public class PresentationView extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 
-	public static void main(final String[] args) {
-		final PresentationView view = new PresentationView(new DatabaseDaoSqlImpl());
-		view.setName("Heat Planet Simulation");
-		view.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		view.setPreferredSize(new Dimension(1000, 800));
-		view.setMaximumSize(new Dimension(1000, 800));
-		view.setResizable(false);
-		view.pack();
-		view.setVisible(true);
-	}
-
-	public PresentationView(final DatabaseDao dao) {
+	public PresentationView(CommandLineParam params, final DatabaseDao dao) {
 		add(newTabbedPane(dao));
 	}
 

@@ -1,35 +1,40 @@
 package models;
 
 import java.util.Collection;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name = "EXPERIMENT")
+@Table(name = "experiment")
 public class Experiment {
 
 	@Id
 	@GeneratedValue
-	@Column (name = "EXPERIMENT_ID")
+	@Column(name = "EXPERIMENT_ID")
 	private int experimentId;
-	
-	@Transient
-	private Collection<GridPoints> gridPoints;
-	
-	@OneToOne
+
+	@OneToMany(targetEntity=GridPoints.class,cascade= CascadeType.ALL,fetch= FetchType.LAZY)
+	private Set<GridPoints> gridPoints;
+
+	@Embedded
 	private SimulationSettings simulationSettings;
-	
-	@Transient
+
+	@Embedded
 	private PhysicalFactors physicalFactors;
-	
-	@Transient
+
+	@Embedded
 	private CommandLineParam commandLineParam;
 
 	public int getExperimentId() {
@@ -40,11 +45,11 @@ public class Experiment {
 		this.experimentId = experimentId;
 	}
 
-	public Collection<GridPoints> getGridPoints() {
+	public Set<GridPoints> getGridPoints() {
 		return gridPoints;
 	}
 
-	public void setGridPoints(final Collection<GridPoints> gridPoints) {
+	public void setGridPoints(final Set<GridPoints> gridPoints) {
 		this.gridPoints = gridPoints;
 	}
 
@@ -52,7 +57,8 @@ public class Experiment {
 		return simulationSettings;
 	}
 
-	public void setSimulationSettings(final SimulationSettings simulationSettings) {
+	public void setSimulationSettings(
+			final SimulationSettings simulationSettings) {
 		this.simulationSettings = simulationSettings;
 	}
 
@@ -79,7 +85,5 @@ public class Experiment {
 	public int getNumOfRegions() {
 		return 5;
 	}
-
-
 
 }
