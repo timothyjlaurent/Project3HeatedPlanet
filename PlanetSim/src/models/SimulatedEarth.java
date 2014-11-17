@@ -3,6 +3,7 @@ package models;
 
 import constants.SimulationConstants;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -342,7 +343,7 @@ public class SimulatedEarth {
 		return heatgain;
 	}
 	
-	protected double degreesToRotate (int timePassed)
+	public double degreesToRotate(int timePassed)
 	{
 		return SimulatedEarth.degreesRotatedPerMinute * timePassed;
 	}
@@ -404,6 +405,51 @@ public class SimulatedEarth {
 		double solarZenithAngle = PI / 2 - solarElevationAngle ;
 
 		return solarZenithAngle;
+	}
+
+
+
+	public double[] getSimStats(){
+		ArrayList<Double> temps = new ArrayList<Double>();
+		double min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
+		double sum = 0 ;
+		double mean;
+		double stdev;
+
+		for( int i = 0 ; i < this.earth.length ; i += 1 ){
+			for ( int j = 0 ; j < this.earth[0].length; j += 1 ){
+				double cur = this.earth[i][j].Temperature();
+
+				if ( cur < min ){
+					min = cur;
+				}
+				if ( cur > max ){
+					max = cur;
+				}
+
+				sum += cur;
+
+				temps.add(this.earth[i][j].Temperature());
+			}
+		}
+
+		mean = sum / temps.size();
+
+		stdev = stdDev( temps , mean );
+
+		double ret[] = {min, max, mean, stdev };
+		return ret;
+
+	}
+
+
+	public double stdDev(ArrayList<Double> list, double mean){
+		double temp = 0 ;
+		for ( double d : list ){
+			temp += (mean - d ) * (mean -d);
+		}
+		return sqrt( temp/ list.size() );
 	}
 
 	/**
