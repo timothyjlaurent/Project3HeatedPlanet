@@ -1,12 +1,26 @@
 package models;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import constants.SimulationConstants;
 
+@Embeddable
 public class SimulationSettings {
 
+	@Column(name = "EXPERIMENT_NAME")
 	private String experimentName;
+	
+	@Column(name = "GRID_SPACING")
 	private int gridSpacing = SimulationConstants.DEFAULT_GRID_SPACING;
-	private int timeStamp = SimulationConstants.DEFAULT_TIME_STEP;
+	
+	@Column(name = "TIME_STEP")
+	private int timeStep = SimulationConstants.DEFAULT_TIME_STEP;
+	
+	@Column(name = "SIMULATION_LENGTH")
 	private int simulationLength = SimulationConstants.DEFAULT_SIM_LENGTH;
 
 	public SimulationSettings(final String experimentName) {
@@ -16,7 +30,7 @@ public class SimulationSettings {
 	public SimulationSettings(final String experimentName, final int gridSpacing, final int timeStamp, final int simulationLength) {
 		this.experimentName = experimentName;
 		this.gridSpacing = gridSpacing;
-		this.timeStamp = timeStamp;
+		this.timeStep = timeStamp;
 		this.simulationLength = simulationLength;
 	}
 
@@ -36,12 +50,12 @@ public class SimulationSettings {
 		this.gridSpacing = gridSpacing;
 	}
 
-	public int getTimeStamp() {
-		return timeStamp;
+	public int getTimeStep() {
+		return timeStep;
 	}
 
-	public void setTimeStamp(final int timeStamp) {
-		this.timeStamp = timeStamp;
+	public void setTimeStep(final int timeStep) {
+		this.timeStep = timeStep;
 	}
 
 	public int getSimulationLength() {

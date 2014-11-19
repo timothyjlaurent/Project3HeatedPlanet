@@ -19,7 +19,9 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import models.CommandLineParam;
 import constants.SimulationConstants;
+import dao.DatabaseDao;
 
 public class SimulationSettingsView extends JPanel implements ActionListener {
 
@@ -44,8 +46,8 @@ public class SimulationSettingsView extends JPanel implements ActionListener {
 	private final JLabel labelMaxTemp = new JLabel();
 	private final JLabel labelStdDeviation = new JLabel();
 
-	public SimulationSettingsView() {
-		this.setLayout(new BorderLayout());
+	public SimulationSettingsView(final CommandLineParam params, final DatabaseDao dao) {
+		setLayout(new BorderLayout());
 		this.add(buildSimulationSettingsAndInfoPanel(), BorderLayout.WEST);
 		this.add(buildSimulationControlsPanel(), BorderLayout.SOUTH);
 	}

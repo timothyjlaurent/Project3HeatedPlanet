@@ -1,13 +1,43 @@
 package models;
 
-import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "experiment")
 public class Experiment {
 
-	private int experimentId;
-	private Collection<GridPoints> gridPoints;
+	@Id
+	@GeneratedValue
+	@Column(name = "EXPERIMENT_ID")
+	private int experimentId = -1;
+
+	@ElementCollection(fetch = FetchType.LAZY)
+	@MapKeyColumn(name = "DATE_TIME")
+	@Column(name = "value")
+	@CollectionTable(name = "grid_points", joinColumns = @JoinColumn(name = "EXPERIMENT_ID"))
+	private Map<Date, Set<GridPoint>> gridPoints;
+
+	@Embedded
 	private SimulationSettings simulationSettings;
+
+	@Embedded
 	private PhysicalFactors physicalFactors;
+
+	@Embedded
 	private CommandLineParam commandLineParam;
 
 	public int getExperimentId() {
@@ -18,11 +48,11 @@ public class Experiment {
 		this.experimentId = experimentId;
 	}
 
-	public Collection<GridPoints> getGridPoints() {
+	public Map<Date, Set<GridPoint>> getGridPoints() {
 		return gridPoints;
 	}
 
-	public void setGridPoints(final Collection<GridPoints> gridPoints) {
+	public void setGridPoints(final Map<Date, Set<GridPoint>> gridPoints) {
 		this.gridPoints = gridPoints;
 	}
 
@@ -50,6 +80,12 @@ public class Experiment {
 		this.commandLineParam = commandLineParam;
 	}
 
+	public int getNumOfTimeSteps() {
+		return 5;
+	}
 
+	public int getNumOfRegions() {
+		return 5;
+	}
 
 }
