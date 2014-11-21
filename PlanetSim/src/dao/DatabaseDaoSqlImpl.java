@@ -109,13 +109,12 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 				final double temp = gridPoint.getTemperature();
 				final BigDecimal value = new BigDecimal(temp);
 				// value.setScale(experiment.getCommandLineParam().getDataPrecision());
+				// //TODO
 				gridPoint.setTemperature(value.doubleValue());
 				pointsToSave.add(gridPoint);
 			}
 		}
 		experiment.setGridPoints(pointsToSave);
-
-		System.out.println(experiment.getGridPoints());
 
 		session.saveOrUpdate(experiment);
 		tx.commit();

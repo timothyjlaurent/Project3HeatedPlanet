@@ -10,6 +10,7 @@ import java.util.Set;
 import javax.swing.JPanel;
 
 import models.GridPoint;
+import util.SimulationUtil;
 
 /**
  * Use this class to display an image of the earth with a grid drawn on top. All
@@ -128,15 +129,31 @@ public class EarthGridDisplay extends JPanel {
 	}
 
 	private void fillCellColors(final Graphics g) {
-		System.out.println(gridPoints);
-		for (final GridPoint gridPoint : gridPoints) {
-			final double newTemp = gridPoint.getTemperature();
-			final int colorValue = new Double(newTemp).intValue();
-			final int x = 180 + gridPoint.getLeftLongitude();
-			final int y = (gridPoint.getTopLatitude() - 90) / 15;
-			g.setColor(colorPicker.getColor(colorValue));
-			g.fillRect(x, gridPoint.getTopLatitude() - 90, earthImage.getWidth() / (360 / 15), 200);
+		final GridPoint[][] gridPointGrid = SimulationUtil.convertSetToGrid(gridPoints, degreeSeparation);
+		int cellX = 0, cellY = 0;
+		final int cellWidth = pixelsPerCellX;
+
+		for (int x = 0; x < numCellsX; x++) {
+			for (int y = 0; y < numCellsY; y++) {
+				final double newTemp = gridPointGrid[x][y].getTemperature();
+				final int colorValue = new Double(newTemp).intValue();
+				final int cellHeight = getCellHeight(y);
+				g.setColor(colorPicker.getColor(colorValue));
+				g.fillRect(cellX, cellY, cellWidth, cellHeight);
+				cellY += cellHeight;
+			}
+			cellX += cellWidth;
+			cellY = 0;
 		}
+	}
+
+	private int getCellHeight(final int col) {
+		final int lat1 = 90 - (col * degreeSeparation);
+		final int lat2 = 90 - ((col + 1) * degreeSeparation);
+
+		final int y1 = (int) Util.getDistToEquator(lat1, radius);
+		final int y2 = (int) Util.getDistToEquator(lat2, radius);
+		return Math.abs(y1 - y2);
 	}
 
 	private void drawTransparentImage(final Graphics g) {

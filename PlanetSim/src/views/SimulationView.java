@@ -82,6 +82,7 @@ public class SimulationView extends JPanel implements ActionListener {
 	private Timer timer;
 	private Experiment experiment;
 	private boolean showAnimation;
+	private int minutesTimePassed = 0;
 
 	public SimulationView(final CommandLineParam params, final DatabaseDao dao) {
 		this.params = params;
@@ -174,7 +175,7 @@ public class SimulationView extends JPanel implements ActionListener {
 
 			@Override
 			public void itemStateChanged(final ItemEvent e) {
-				showAnimation = e.getStateChange() == 1;
+				showAnimation = inputShowAnimation.isSelected();
 			}
 		});
 		settingsPanel.add(inputShowAnimation, valueConstraints);
@@ -305,12 +306,14 @@ public class SimulationView extends JPanel implements ActionListener {
 			buttonStart.setEnabled(true);
 			buttonPause.setEnabled(false);
 			buttonStop.setEnabled(true);
+			stop();
 		} else if (source == buttonStop) {
 			enableInputs();
 			dao.saveOrUpdate(experiment);
 			buttonStart.setText("Start");
 			setDefaultControlValues();
 			setDefaultButtonsEnabledStatus();
+			minutesTimePassed = 0;
 			stop();
 		}
 	}
@@ -318,7 +321,6 @@ public class SimulationView extends JPanel implements ActionListener {
 	public void start(final Experiment experiment, final int displayRate) {
 		stop();
 		timer = new Timer(displayRate, new ActionListener() {
-			private int minutesTimePassed = 0;
 
 			@Override
 			public void actionPerformed(final ActionEvent event) {

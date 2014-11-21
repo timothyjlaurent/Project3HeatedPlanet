@@ -50,4 +50,19 @@ public class SimulationUtil {
 		stats.setStandardDeviation(calculateStandardDeviation(gridPoints, stats.getMean()));
 		return stats;
 	}
+
+	public static GridPoint[][] convertSetToGrid(final Set<GridPoint> gridPoints, final int gridSpacing) {
+		final int numOfCols = 360 / gridSpacing;
+		final GridPoint[][] gridPointGrid = new GridPoint[numOfCols][numOfCols / 2];
+		for (final GridPoint gridPoint : gridPoints) {
+			final int x = (180 + gridPoint.getLeftLongitude()) / gridSpacing;
+			final int y = (90 - gridPoint.getTopLatitude()) / gridSpacing;
+			gridPointGrid[x][y] = gridPoint;
+		}
+
+		// final int x = 180 + gridPoint.getLeftLongitude();
+		// final int y = (gridPoint.getTopLatitude() - 90) / 15;
+
+		return gridPointGrid;
+	}
 }

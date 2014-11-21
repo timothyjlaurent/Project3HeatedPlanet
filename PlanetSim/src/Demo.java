@@ -15,8 +15,8 @@ public class Demo {
 			final PresentationView view = new PresentationView(params, new DatabaseDaoSqlImpl());
 			view.setName("Heat Planet Simulation");
 			view.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			view.setPreferredSize(new Dimension(1000, 700));
-			view.setMaximumSize(new Dimension(1000, 700));
+			view.setPreferredSize(new Dimension(1200, 700));
+			view.setMaximumSize(new Dimension(1200, 700));
 			view.setResizable(false);
 			view.pack();
 			view.setVisible(true);

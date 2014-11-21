@@ -1,5 +1,7 @@
 package views;
 
+import static java.util.Collections.sort;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -36,11 +38,8 @@ public class QueryResultsView extends JPanel {
 	}
 
 	public void updateExpirement(final List<Experiment> experiment, final DatabaseQuery query) {
-		System.out.println("Empty");
 		if (!experiment.isEmpty()) {
-			System.out.println("Happens");
 			final List<Date> dates = new ArrayList<Date>(experiment.get(0).getGridPointMap().keySet());
-			System.out.println(dates);
 			final Object[][] experimentValues = new Object[dates.size()][experiment.get(0).getGridPointMap().get(dates.get(0)).size() + 1];
 			final Object[] experimentColumnHeaders = new Object[experiment.get(0).getGridPointMap().get(dates.get(0)).size() + 1];
 
@@ -51,7 +50,10 @@ public class QueryResultsView extends JPanel {
 				int x = 0;
 				experimentColumnHeaders[header] = "Header";
 
-				for (final GridPoint gridPoint : entry.getValue()) {
+				final List<GridPoint> sortableList = new ArrayList<GridPoint>(entry.getValue());
+				sort(sortableList);
+
+				for (final GridPoint gridPoint : sortableList) {
 					experimentValues[x][y] = gridPoint.getTemperature();
 					x++;
 				}
@@ -59,7 +61,6 @@ public class QueryResultsView extends JPanel {
 				y++;
 			}
 			dataTable.setModel(new DefaultTableModel(experimentValues, experimentColumnHeaders));
-			// dataTable.setDefaultRenderer(new TableCellLongTextRenderer());
 		}
 	}
 
