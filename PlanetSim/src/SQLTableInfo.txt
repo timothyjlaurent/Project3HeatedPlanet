@@ -1,0 +1,23 @@
+How to setup tables (until we can create the script): 
+
+• In the VM, go to PHP MyAdmin and create a database called 'planetsim'
+• Create a table called 'experiment' with the following columns
+	Column					Type			Null	Extra
+	experiment_id 			bigint(20) 		No 	 	AUTO_INCREMENT 	|| Primary && Unique
+	experiment_name 		varchar(100) 	No 		
+	grid_spacing 			int(11) 		No 	
+	time_step 				int(11) 		No 	
+	simulation_length 		int(11) 		No 	
+	data_precision 			int(11) 		No 	
+	geo_precision 			int(11) 		No 	
+	temporal_precision 		int(11) 		No 	
+	axial_tilt 				double 			No 	
+	orbital_eccentricity 	double 			No 
+• Create a table called 'grid_points' with the following columns	
+	Column				Type			Null	Extra
+	date_time 			datetime 		No
+	top_latitude 		int(11) 		No
+	left_longitude 		int(11) 		No
+	temperature 		double 			No
+	grid_id 			bigint(20) 		No	 	AUTO_INCREMENT 	|| Primary && Unique
+	experiment_id 		bigint(20) 		No 		Foreign Key

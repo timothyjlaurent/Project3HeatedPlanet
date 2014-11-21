@@ -1,13 +1,26 @@
 package views;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
+import models.DatabaseQuery;
 import models.Experiment;
+import models.GridPoint;
 
 public class QueryResultsView extends JPanel {
 
@@ -22,15 +35,66 @@ public class QueryResultsView extends JPanel {
 		add(scollablePane);
 	}
 
-	public void updateExpirement(final Experiment experiment) {
-		final Object[][] experimentValues = new Object[experiment.getGridPoints().keySet().size()][experiment.getNumOfRegions() + 1];
-		final Object[] experimentColumnHeaders = new Object[experiment.getNumOfRegions() + 1];
+	public void updateExpirement(final List<Experiment> experiment, final DatabaseQuery query) {
+		System.out.println("Empty");
+		if (!experiment.isEmpty()) {
+			System.out.println("Happens");
+			final List<Date> dates = new ArrayList<Date>(experiment.get(0).getGridPointMap().keySet());
+			System.out.println(dates);
+			final Object[][] experimentValues = new Object[dates.size()][experiment.get(0).getGridPointMap().get(dates.get(0)).size() + 1];
+			final Object[] experimentColumnHeaders = new Object[experiment.get(0).getGridPointMap().get(dates.get(0)).size() + 1];
 
-		experimentColumnHeaders[0] = "";
-		for (int i = 1; i < experimentColumnHeaders.length; i++) {
+			experimentColumnHeaders[0] = "";
+			int y = 0;
+			int header = 1;
+			for (final Entry<Date, Set<GridPoint>> entry : experiment.get(0).getGridPointMap().entrySet()) {
+				int x = 0;
+				experimentColumnHeaders[header] = "Header";
 
+				for (final GridPoint gridPoint : entry.getValue()) {
+					experimentValues[x][y] = gridPoint.getTemperature();
+					x++;
+				}
+				header++;
+				y++;
+			}
+			dataTable.setModel(new DefaultTableModel(experimentValues, experimentColumnHeaders));
+			// dataTable.setDefaultRenderer(new TableCellLongTextRenderer());
+		}
+	}
+
+	// Source:
+	// http://www.todayisearched.com/2011/02/jtable-display-long-text-with-linebreak-word-wrap.html
+	private class TableCellLongTextRenderer extends DefaultTableCellRenderer implements TableCellRenderer {
+
+		@Override
+		public Component getTableCellRendererComponent(final JTable table, final Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column) {
+			final JTextArea jtext = new JTextArea();
+			jtext.setText((String) value);
+			jtext.setWrapStyleWord(true);
+			jtext.setLineWrap(true);
+			if (isSelected) {
+				jtext.setBackground((Color) UIManager.get("Table.selectionBackground"));
+			}
+			return jtext;
 		}
 
-		dataTable.setModel(new DefaultTableModel(experimentValues, experimentColumnHeaders));
+		// METHODS overridden for performance
+		@Override
+		public void validate() {
+		}
+
+		@Override
+		public void revalidate() {
+		}
+
+		@Override
+		public void firePropertyChange(final String propertyName, final Object oldValue, final Object newValue) {
+		}
+
+		@Override
+		public void firePropertyChange(final String propertyName, final boolean oldValue, final boolean newValue) {
+		}
+
 	}
 }

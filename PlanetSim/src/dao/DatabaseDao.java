@@ -15,7 +15,7 @@ public interface DatabaseDao {
 	 * @param query
 	 * @return
 	 */
-	public Experiment get(DatabaseQuery query);
+	public List<Experiment> get(DatabaseQuery query);
 
 	/**
 	 * Methods for saving a planet into the database.

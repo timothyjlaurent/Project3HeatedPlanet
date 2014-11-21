@@ -3,17 +3,19 @@ package models;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
+import constants.SimulationConstants;
+
 @Embeddable
 public class CommandLineParam {
-	
-	@Column(name="DATA_PRECISION")
-	private int dataPrecision;
-	
-	@Column(name="GEO_PRECISION")
-	private int geographicPrecision;
-	
-	@Column(name="TEMPORAL_PRECISION")
-	private int temporalPrecision;
+
+	@Column(name = "DATA_PRECISION")
+	private int dataPrecision = SimulationConstants.DEFAULT_DATA_PRECISION;
+
+	@Column(name = "GEO_PRECISION")
+	private int geographicPrecision = SimulationConstants.DEFAULT_GEOGRAPHIC_PRECISION;
+
+	@Column(name = "TEMPORAL_PRECISION")
+	private int temporalPrecision = SimulationConstants.DEFAULT_TEMPORAL_PRECISION;
 
 	public int getDataPrecision() {
 		return dataPrecision;

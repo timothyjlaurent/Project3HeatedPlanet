@@ -2,9 +2,6 @@ package models;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import constants.SimulationConstants;
 
@@ -13,15 +10,18 @@ public class SimulationSettings {
 
 	@Column(name = "EXPERIMENT_NAME")
 	private String experimentName;
-	
+
 	@Column(name = "GRID_SPACING")
 	private int gridSpacing = SimulationConstants.DEFAULT_GRID_SPACING;
-	
+
 	@Column(name = "TIME_STEP")
 	private int timeStep = SimulationConstants.DEFAULT_TIME_STEP;
-	
+
 	@Column(name = "SIMULATION_LENGTH")
 	private int simulationLength = SimulationConstants.DEFAULT_SIM_LENGTH;
+
+	public SimulationSettings() {
+	}
 
 	public SimulationSettings(final String experimentName) {
 		this.experimentName = experimentName;
@@ -30,7 +30,7 @@ public class SimulationSettings {
 	public SimulationSettings(final String experimentName, final int gridSpacing, final int timeStamp, final int simulationLength) {
 		this.experimentName = experimentName;
 		this.gridSpacing = gridSpacing;
-		this.timeStep = timeStamp;
+		timeStep = timeStamp;
 		this.simulationLength = simulationLength;
 	}
 

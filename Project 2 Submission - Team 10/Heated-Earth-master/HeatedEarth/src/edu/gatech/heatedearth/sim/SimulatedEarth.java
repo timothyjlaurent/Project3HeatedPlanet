@@ -190,7 +190,7 @@ public class SimulatedEarth {
 	
 	protected void heatGridFromSun()
 	{
-		heatgain = 0 ;
+		double heatgain = 0 ;
 		for (int i = 0; i < this.gridRows; ++i)
 		{
 			for (int j = 0; j < this.gridColumns; ++j)

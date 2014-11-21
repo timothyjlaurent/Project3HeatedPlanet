@@ -1,24 +1,28 @@
 package models;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "grid_points")
-public class GridPoint {
+public class GridPoint implements Comparable<GridPoint> {
 
 	@Id
-	@Column(name = "grid_id")
 	@GeneratedValue
+	@Column(name = "grid_id")
 	private int gridId = -1;
 
-	@Column(name = "topLatitude")
+	@Column(name = "top_latitude")
 	private int topLatitude;
 
-	@Column(name = "leftLongitude")
+	@Column(name = "left_longitude")
 	private int leftLongitude;
 
 	@Column(name = "temperature")
@@ -27,11 +31,15 @@ public class GridPoint {
 	@Column(name = "experiment_id")
 	private int experimentId;
 
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "date_time")
+	private Date dateTime;
+
 	public int getGridId() {
 		return gridId;
 	}
 
-	public void setGridId(int gridId) {
+	public void setGridId(final int gridId) {
 		this.gridId = gridId;
 	}
 
@@ -59,9 +67,17 @@ public class GridPoint {
 		this.temperature = temperature;
 	}
 
+	public Date getDateTime() {
+		return dateTime;
+	}
+
+	public void setDateTime(final Date dateTime) {
+		this.dateTime = dateTime;
+	}
+
 	@Override
 	public String toString() {
-		return "GridPoint [topLatitude=" + topLatitude + ", leftLongitude=" + leftLongitude + ", temperature=" + temperature + "]";
+		return "GridPoint [topLatitude=" + topLatitude + ", leftLongitude=" + leftLongitude + ", temperature=" + temperature + ", date=" + dateTime + "]";
 	}
 
 	@Override
@@ -74,19 +90,34 @@ public class GridPoint {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+	public boolean equals(final Object obj) {
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
-		GridPoint other = (GridPoint) obj;
-		if (leftLongitude != other.leftLongitude)
+		}
+		final GridPoint other = (GridPoint) obj;
+		if (leftLongitude != other.leftLongitude) {
 			return false;
-		if (topLatitude != other.topLatitude)
+		}
+		if (topLatitude != other.topLatitude) {
 			return false;
+		}
 		return true;
+	}
+
+	@Override
+	public int compareTo(final GridPoint other) {
+		int c;
+		c = new Integer(getTopLatitude()).compareTo(new Integer(other.getTopLatitude()));
+		if (c == 0) {
+			c = new Integer(getLeftLongitude()).compareTo(new Integer(other.getLeftLongitude()));
+		}
+		return c;
 	}
 
 }

@@ -7,10 +7,8 @@ import static java.lang.Math.min;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
-import java.util.Collection;
 import java.util.Set;
 
-import models.Experiment;
 import models.GridPoint;
 import models.SimulationStats;
 
@@ -29,31 +27,27 @@ public class SimulationUtil {
 		return currentDateAndTime % MINUTES_IN_YEAR;
 	}
 
-	public static double calculateStandardDeviation(final Collection<Set<GridPoint>> collection, final double mean) {
+	public static double calculateStandardDeviation(final Set<GridPoint> collection, final double mean) {
 		double temp = 0;
 		int total = 0;
-		for (final Set<GridPoint> set : collection) {
-			for (final GridPoint gridPoint : set) {
-				temp += pow((mean - gridPoint.getTemperature()), 2);
-				total++;
-			}
+		for (final GridPoint gridPoint : collection) {
+			temp += pow((mean - gridPoint.getTemperature()), 2);
+			total++;
 		}
 		return sqrt(temp / total);
 	}
 
-	public SimulationStats calculateSimulationStats(final Experiment experiment) {
+	public static SimulationStats calculateSimulationStats(final Set<GridPoint> gridPoints) {
 		final SimulationStats stats = new SimulationStats();
 
 		double sum = 0;
-		for (final Set<GridPoint> gridPointSet : experiment.getGridPoints().values()) {
-			for (final GridPoint gridPoint : gridPointSet) {
-				stats.setMin(min(stats.getMin(), gridPoint.getTemperature()));
-				stats.setMax(Math.max(stats.getMax(), gridPoint.getTemperature()));
-				sum += gridPoint.getTemperature();
-			}
+		for (final GridPoint gridPoint : gridPoints) {
+			stats.setMin(min(stats.getMin(), gridPoint.getTemperature()));
+			stats.setMax(Math.max(stats.getMax(), gridPoint.getTemperature()));
+			sum += gridPoint.getTemperature();
 		}
-		stats.setMean(sum / experiment.getGridPoints().size());
-		stats.setStandardDeviation(calculateStandardDeviation(experiment.getGridPoints().values(), stats.getMean()));
+		stats.setMean(sum / gridPoints.size());
+		stats.setStandardDeviation(calculateStandardDeviation(gridPoints, stats.getMean()));
 		return stats;
 	}
 }

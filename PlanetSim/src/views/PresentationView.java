@@ -12,7 +12,7 @@ public class PresentationView extends JFrame {
 
 	public PresentationView(final CommandLineParam params, final DatabaseDao dao) {
 		final JTabbedPane tabbedPane = new JTabbedPane();
-		tabbedPane.addTab("Simulation", new SimulationSettingsView(params, dao));
+		tabbedPane.addTab("Simulation", new SimulationView(params, dao));
 		tabbedPane.addTab("Query", new QueryInterfaceView(params, dao));
 		add(tabbedPane);
 	}

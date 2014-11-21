@@ -21,10 +21,13 @@ import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 import static util.SimulationUtil.calculateTimeSinceLastPerihelion;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,46 +40,32 @@ import constants.SimulationConstants;
 
 public class SimulationController {
 
-	public static void main(final String[] args) {
-		final SimulationSettings settings = new SimulationSettings("Name");
-		settings.setGridSpacing(30);
-		SimulationController.simulate(null, settings, null, SimulationConstants.DEFAULT_START_DATE);
+	public static Set<GridPoint> simulateIteration(final Experiment experiment, final int timePassed) {
+		final Set<GridPoint> previousGridPointSet = new HashSet<GridPoint>(experiment.getGridPointMap().get(getMaxDate(experiment)));
+		double heatPerIteration = diffuseHeatFromNeighbors(experiment, previousGridPointSet);
+		heatPerIteration += heatGridFromSun(experiment, timePassed, previousGridPointSet);
+		coolEarth(experiment, heatPerIteration, previousGridPointSet);
+		final Calendar cal = Calendar.getInstance();
+		for (final GridPoint gridPoint : previousGridPointSet) {
+			cal.setTime(gridPoint.getDateTime());
+			cal.add(Calendar.MINUTE, timePassed);
+			gridPoint.setDateTime(cal.getTime());
+		}
+		return previousGridPointSet;
 	}
 
-	private static Experiment experiment;
-	private static Date dateTimeOfExperiment;
+	private static Date getMaxDate(final Experiment experiment) {
+		final List<Date> dates = new ArrayList<Date>(experiment.getGridPointMap().keySet());
+		Collections.sort(dates);
+		return dates.get(dates.size() - 1);
+	}
 
-	public static Experiment simulate(final CommandLineParam commandLineParam, final SimulationSettings simulationSettings, final PhysicalFactors physicalFactors, final Calendar startDate) {
-		experiment = new Experiment();
+	public static Experiment initializeGridPoints(final CommandLineParam commandLineParam, final SimulationSettings simulationSettings, final PhysicalFactors physicalFactors, final Calendar startDate) {
+		final Experiment experiment = new Experiment();
 		experiment.setCommandLineParam(commandLineParam);
 		experiment.setSimulationSettings(simulationSettings);
 		experiment.setPhysicalFactors(physicalFactors);
 
-		initializeGridPoints(experiment, startDate);
-
-		int minutesFromStart = 0;
-		while (minutesFromStart < simulationSettings.getSimulationLength()) {
-			minutesFromStart += simulationSettings.getTimeStep();
-			dateTimeOfExperiment = minutesToDate(minutesFromStart, startDate);
-			experiment.getGridPoints().put(dateTimeOfExperiment, simulateIteration(minutesFromStart, new HashSet<GridPoint>(experiment.getGridPoints().get(minutesToDate(-minutesFromStart, startDate)))));
-		}
-		return experiment;
-	}
-
-	private static Date minutesToDate(final int currentDateTime, final Calendar startDate) {
-		startDate.add(Calendar.MINUTE, currentDateTime);
-		return startDate.getTime();
-	}
-
-	public static Set<GridPoint> simulateIteration(final int timePassed, final Set<GridPoint> previousGridPointSet) {
-
-		double heatPerIteration = diffuseHeatFromNeighbors(previousGridPointSet);
-		heatPerIteration += heatGridFromSun(timePassed, previousGridPointSet);
-		coolEarth(heatPerIteration, previousGridPointSet);
-		return previousGridPointSet;
-	}
-
-	private static void initializeGridPoints(final Experiment experiment, final Calendar startDate) {
 		final Map<Date, Set<GridPoint>> gridPoints = new HashMap<Date, Set<GridPoint>>();
 		final Set<GridPoint> gridPointSet = new HashSet<GridPoint>();
 		for (int i = 0; i < WIDTH_IN_DEGREES; i += experiment.getSimulationSettings().getGridSpacing()) {
@@ -85,11 +74,13 @@ public class SimulationController {
 				gridPoint.setLeftLongitude(i - 180);
 				gridPoint.setTopLatitude(90 - j);
 				gridPoint.setTemperature(SimulationConstants.DEFAULT_CELL_TEMP);
+				gridPoint.setDateTime(startDate.getTime());
 				gridPointSet.add(gridPoint);
 			}
 		}
 		gridPoints.put(startDate.getTime(), gridPointSet);
-		experiment.setGridPoints(gridPoints);
+		experiment.setGridPointMap(gridPoints);
+		return experiment;
 	}
 
 	private static GridPoint getNeigbhorGridPoint(final Set<GridPoint> gridPoints, int latitude, int longitude) {
@@ -107,7 +98,7 @@ public class SimulationController {
 		return 2 * PI * calculateTimeSinceLastPerihelion(time) / MINUTES_IN_YEAR;
 	}
 
-	private static double computeEccentricAnomaly(final int minutesFromStart) {
+	private static double computeEccentricAnomaly(final Experiment experiment, final int minutesFromStart) {
 		final double meanAnomaly = calculateMeanAnomaly(minutesFromStart);
 		final double epsilon = 10e-16;
 		double root = 0;
@@ -120,36 +111,36 @@ public class SimulationController {
 		return root;
 	}
 
-	private static double computeTrueAnomaly(final int minutesFromStart) {
-		return acos((cos(computeEccentricAnomaly(minutesFromStart)) - experiment.getPhysicalFactors().getOrbitalEccentricity()) / (1 - experiment.getPhysicalFactors().getOrbitalEccentricity() * cos(computeEccentricAnomaly(minutesFromStart))));
+	private static double computeTrueAnomaly(final Experiment experiment, final int minutesFromStart) {
+		return acos((cos(computeEccentricAnomaly(experiment, minutesFromStart)) - experiment.getPhysicalFactors().getOrbitalEccentricity()) / (1 - experiment.getPhysicalFactors().getOrbitalEccentricity() * cos(computeEccentricAnomaly(experiment, minutesFromStart))));
 	}
 
-	private static double getSolarDistance(final int minutesFromStart) {
-		return SEMIMAJOR_AXIS * (1 - pow(experiment.getPhysicalFactors().getOrbitalEccentricity(), 2)) / (1 + experiment.getPhysicalFactors().getOrbitalEccentricity() * cos(computeTrueAnomaly(minutesFromStart)));
+	private static double getSolarDistance(final Experiment experiment, final int minutesFromStart) {
+		return SEMIMAJOR_AXIS * (1 - pow(experiment.getPhysicalFactors().getOrbitalEccentricity(), 2)) / (1 + experiment.getPhysicalFactors().getOrbitalEccentricity() * cos(computeTrueAnomaly(experiment, minutesFromStart)));
 	}
 
-	private static double getDistanceRadiationAdjustment(final int minutesFromStart) {
-		return pow(getSolarDistance(0), 2) / pow(getSolarDistance(minutesFromStart), 2);
+	private static double getDistanceRadiationAdjustment(final Experiment experiment, final int minutesFromStart) {
+		return pow(getSolarDistance(experiment, 0), 2) / pow(getSolarDistance(experiment, minutesFromStart), 2);
 	}
 
-	private static double computeSunNoonLatitude(final int minutesFromStart) {
-		return toDegrees(toRadians(experiment.getPhysicalFactors().getAxialTilt()) * sin(computeRotationalAngle(minutesFromStart)));
+	private static double computeSunNoonLatitude(final Experiment experiment, final int minutesFromStart) {
+		return toDegrees(toRadians(experiment.getPhysicalFactors().getAxialTilt()) * sin(computeRotationalAngle(experiment, minutesFromStart)));
 	}
 
 	private static double computeSunNoonLongitude(final int minutesFromStart) {
 		return (minutesFromStart % MINUTES_IN_DAY) * WIDTH_IN_DEGREES / MINUTES_IN_DAY;
 	}
 
-	private static double computeRotationalAngle(final int minutesFromStart) {
-		return ((minutesFromStart - computeTimeEquinox()) % MINUTES_IN_YEAR) * 2.0 * PI / MINUTES_IN_YEAR;
+	private static double computeRotationalAngle(final Experiment experiment, final int minutesFromStart) {
+		return ((minutesFromStart - computeTimeEquinox(experiment)) % MINUTES_IN_YEAR) * 2.0 * PI / MINUTES_IN_YEAR;
 	}
 
-	private static int computeTimeEquinox() {
+	private static int computeTimeEquinox(final Experiment experiment) {
 		final double precision = 0.0015; // degrees
 		int firstOfYearInMinutes = 0;
 		int middleOfYearInMinutes = MINUTES_IN_YEAR / 2;
 		int timeEquinox = (middleOfYearInMinutes - firstOfYearInMinutes) / 2 + firstOfYearInMinutes;
-		double difference = toDegrees(computeTrueAnomaly(timeEquinox)) - ARGUMENT_OF_PERIAPSIS;
+		double difference = toDegrees(computeTrueAnomaly(experiment, timeEquinox)) - ARGUMENT_OF_PERIAPSIS;
 		while (abs(difference) > precision) {
 			if (difference < 0) {
 				firstOfYearInMinutes = timeEquinox + 1;
@@ -157,28 +148,28 @@ public class SimulationController {
 				middleOfYearInMinutes = timeEquinox - 1;
 			}
 			timeEquinox = (middleOfYearInMinutes - firstOfYearInMinutes) / 2 + firstOfYearInMinutes;
-			difference = toDegrees(computeTrueAnomaly(timeEquinox)) - ARGUMENT_OF_PERIAPSIS;
+			difference = toDegrees(computeTrueAnomaly(experiment, timeEquinox)) - ARGUMENT_OF_PERIAPSIS;
 		}
 		return timeEquinox;
 	}
 
-	private static void coolEarth(final double heatGain, final Set<GridPoint> previousGridPointSet) {
+	private static void coolEarth(final Experiment experiment, final double heatGain, final Set<GridPoint> previousGridPointSet) {
 		final double totalPlanetHeat = SURFACEAREA_OF_EARTH * SimulationConstants.DEFAULT_CELL_TEMP + heatGain;
 
-		for (final GridPoint gridPoint : experiment.getGridPoints().get(dateTimeOfExperiment)) {
-			final double heatLoss = calculateSurfaceArea(gridPoint) * gridPoint.getTemperature() / totalPlanetHeat * heatGain;
-			gridPoint.setTemperature(gridPoint.getTemperature() - heatLoss / calculateSurfaceArea(gridPoint));
+		for (final GridPoint gridPoint : previousGridPointSet) {
+			final double heatLoss = calculateSurfaceArea(experiment, gridPoint) * gridPoint.getTemperature() / totalPlanetHeat * heatGain;
+			gridPoint.setTemperature(gridPoint.getTemperature() - heatLoss / calculateSurfaceArea(experiment, gridPoint));
 		}
 	}
 
-	private static double diffuseHeatFromNeighbors(Set<GridPoint> gridPoints) {
+	private static double diffuseHeatFromNeighbors(final Experiment experiment, Set<GridPoint> gridPoints) {
 
 		double heatChange = 0;
 		final Set<GridPoint> heatedGridPoint = new HashSet<GridPoint>();
 		for (final GridPoint gridPoint : gridPoints) {
 			final GridPoint newGridPoint = gridPoint;
-			final double verticalSideLength = calculateVerticalSideLength();
-			final double northSideLength = calculateNorthSideLength(gridPoint, verticalSideLength);
+			final double verticalSideLength = calculateVerticalSideLength(experiment);
+			final double northSideLength = calculateNorthSideLength(experiment, gridPoint, verticalSideLength);
 			final double southSideLength = calculateSouthSideLength(gridPoint, verticalSideLength);
 			final double gridPerimeter = northSideLength + southSideLength + 2 * verticalSideLength;
 
@@ -192,7 +183,7 @@ public class SimulationController {
 			final double neighborTemp = eastTemp + westTemp + northTemp + southTemp;
 
 			final double newTemp = (neighborTemp + gridPoint.getTemperature()) / 2;
-			heatChange += (newTemp * calculateSurfaceArea(gridPoint)) - gridPoint.getTemperature() * calculateSurfaceArea(gridPoint);
+			heatChange += (newTemp * calculateSurfaceArea(experiment, gridPoint)) - gridPoint.getTemperature() * calculateSurfaceArea(experiment, gridPoint);
 
 			newGridPoint.setTemperature(newTemp);
 			heatedGridPoint.add(newGridPoint);
@@ -202,36 +193,36 @@ public class SimulationController {
 		return heatChange;
 	}
 
-	private static double heatGridFromSun(final int minutesFromStart, final Set<GridPoint> gridPoints) {
-		final double proportionRadiation = getDistanceRadiationAdjustment(minutesFromStart);
+	private static double heatGridFromSun(final Experiment experiment, final int minutesFromStart, final Set<GridPoint> gridPoints) {
+		final double proportionRadiation = getDistanceRadiationAdjustment(experiment, minutesFromStart);
 		final double longitudeOfSun = computeSunNoonLongitude(minutesFromStart);
-		final double latitudeOfSun = computeSunNoonLatitude(minutesFromStart);
+		final double latitudeOfSun = computeSunNoonLatitude(experiment, minutesFromStart);
 
 		double heatGain = 0;
 		for (final GridPoint gridPoint : gridPoints) {
 			final double zenithAngle = calculateSolarZenith(gridPoint, longitudeOfSun, latitudeOfSun);
 			final double tempIncrease = cos(zenithAngle) > 0 ? SOLAR_CONSTANT * proportionRadiation * cos(zenithAngle) * minutesFromStart : 0;
-			heatGain += calculateSurfaceArea(gridPoint) * tempIncrease;
+			heatGain += calculateSurfaceArea(experiment, gridPoint) * tempIncrease;
 			gridPoint.setTemperature(gridPoint.getTemperature() + tempIncrease);
 		}
 
 		return heatGain;
 	}
 
-	private static double calculateSurfaceArea(final GridPoint gridPoint) {
-		final double verticalSideLength = calculateVerticalSideLength();
-		final double northSideLength = calculateNorthSideLength(gridPoint, verticalSideLength);
+	private static double calculateSurfaceArea(final Experiment experiment, final GridPoint gridPoint) {
+		final double verticalSideLength = calculateVerticalSideLength(experiment);
+		final double northSideLength = calculateNorthSideLength(experiment, gridPoint, verticalSideLength);
 		final double southSideLength = calculateSouthSideLength(gridPoint, verticalSideLength);
 		final double height = sqrt(pow(verticalSideLength, 2) - .25 * pow(northSideLength - southSideLength, 2));
 		final double surfaceArea = .5 * (northSideLength + southSideLength) * height;
 		return surfaceArea;
 	}
 
-	private static int calculateVerticalSideLength() {
+	private static int calculateVerticalSideLength(final Experiment experiment) {
 		return CIRCUMFERENCE_OF_EARTH * experiment.getSimulationSettings().getGridSpacing() / WIDTH_IN_DEGREES;
 	}
 
-	private static double calculateNorthSideLength(final GridPoint gridPoint, final double verticalSideLength) {
+	private static double calculateNorthSideLength(final Experiment experiment, final GridPoint gridPoint, final double verticalSideLength) {
 		return cos(toRadians(gridPoint.getTopLatitude() + experiment.getSimulationSettings().getGridSpacing())) * verticalSideLength;
 	}
 

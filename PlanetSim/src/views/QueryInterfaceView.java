@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 
 import models.CommandLineParam;
 import models.DatabaseQuery;
+import constants.SimulationConstants;
 import dao.DatabaseDao;
 
 public class QueryInterfaceView extends JPanel implements ActionListener {
@@ -55,15 +56,21 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 	private final JFormattedTextField inputCoordinateOneLongitude = new JFormattedTextField(buildNumberFormatter(-180, 180));;
 	private final JFormattedTextField inputCoordinateTwoLatitude = new JFormattedTextField(buildNumberFormatter(-180, 180));;
 	private final JFormattedTextField inputCoordinateTwoLongitude = new JFormattedTextField(buildNumberFormatter(-180, 180));;
+	private JFormattedTextField inputGridSpacing;
+	private JFormattedTextField inputAxialTilt;
+	private JFormattedTextField inputOrbitalEccentricity;
+	private JFormattedTextField inputTimeStep;
 
 	private JButton buttonQuery;
 
 	private final DatabaseDao dao;
 	private DatabaseQuery databaseQuery;
 	private final QueryResultsView resultsPanel = new QueryResultsView();
+	private final CommandLineParam params;
 
 	public QueryInterfaceView(final CommandLineParam params, final DatabaseDao dao) {
 		this.dao = dao;
+		this.params = params;
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		add(resultsPanel);
@@ -83,13 +90,17 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 	}
 
 	private JPanel buildQuerySettingsAndInfoPanel() {
-		final JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createTitledBorder("Query:"));
+		final JPanel panel = new JPanel(new GridBagLayout());
+		panel.setBorder(createTitledBorder("Query:"));
 
-		panel.add(newSimulationPanel());
-		panel.add(newLatLongPanel());
-		panel.add(newFromDateAndTimePanel());
-		panel.add(newToDateAndTimePanel());
+		final GridBagConstraints constraint = new GridBagConstraints();
+		constraint.weighty = 1;
+		constraint.gridy = 0;
+
+		panel.add(newSimulationPanel(), constraint);
+		panel.add(newLatLongPanel(), constraint);
+		panel.add(newFromDateAndTimePanel(), constraint);
+		panel.add(newToDateAndTimePanel(), constraint);
 
 		return panel;
 	}
@@ -105,7 +116,41 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		comboBoxSimulationName = new JComboBox(new DefaultComboBoxModel(dao.getExperimentNames().toArray()));
 		simulationPanel.add(comboBoxSimulationName, valueConstraints);
 
+		final JLabel labelAxialTilt = new JLabel("Axial Tilt:");
+		simulationPanel.add(labelAxialTilt, labelConstraints);
+		inputAxialTilt = new JFormattedTextField(buildNumberFormatter(-180.00, 180.00, 2));
+		inputAxialTilt.setColumns(5);
+		simulationPanel.add(inputAxialTilt, valueConstraints);
+
+		// Orbital Eccentricity
+		final JLabel labelOrbitalEccentricity = new JLabel("Orbital Eccentricity:");
+		simulationPanel.add(labelOrbitalEccentricity, labelConstraints);
+		inputOrbitalEccentricity = new JFormattedTextField(buildNumberFormatter(0.00000, 1.00000, 4));
+		inputOrbitalEccentricity.setColumns(5);
+		simulationPanel.add(inputOrbitalEccentricity, valueConstraints);
+
+		// Time Step
+		final JLabel labelTimeStep = new JLabel("Time Step:");
+		simulationPanel.add(labelTimeStep, labelConstraints);
+		inputTimeStep = new JFormattedTextField(buildNumberFormatter(1, 525600));
+		inputTimeStep.setColumns(5);
+		simulationPanel.add(inputTimeStep, valueConstraints);
+
+		// Grid Spacing
+		simulationPanel.add(new JLabel("Grid Spacing:"), labelConstraints);
+		inputGridSpacing = new JFormattedTextField(buildNumberFormatter(1, 180));
+		inputGridSpacing.setColumns(5);
+		simulationPanel.add(inputGridSpacing, valueConstraints);
+
+		setDefaultControlValues();
 		return simulationPanel;
+	}
+
+	private void setDefaultControlValues() {
+		inputAxialTilt.setText(Double.toString(SimulationConstants.DEFAULT_AXIAL_TILT));
+		inputOrbitalEccentricity.setText(Double.toString(SimulationConstants.DEFAULT_ORBITAL_ECCENTRICITY));
+		inputTimeStep.setText(Integer.toString(SimulationConstants.DEFAULT_TIME_STEP));
+		inputGridSpacing.setText(Integer.toString(SimulationConstants.DEFAULT_GRID_SPACING));
 	}
 
 	private JPanel newLatLongPanel() {
@@ -176,6 +221,7 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		panel.add(days);
 
 		years.addActionListener(this);
+		years.setSelectedItem("2000");
 		panel.add(years);
 
 		return panel;
@@ -228,6 +274,7 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		comboBox.setSelectedIndex(newCurrIndex);
 	}
 
+	@Override
 	public void actionPerformed(final ActionEvent event) {
 		if (event.getSource().equals(comboBoxFromYears) || event.getSource().equals(comboBoxFromMonths)) {
 			updateDaysComboBox(comboBoxFromDays, comboBoxFromMonths.getSelectedIndex(), comboBoxFromYears.getSelectedIndex());
@@ -240,9 +287,17 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 			databaseQuery.setCoordinateLatitudeTwo(getIntValue(inputCoordinateTwoLatitude));
 			databaseQuery.setCoordinateLongitudeOne(getIntValue(inputCoordinateOneLongitude));
 			databaseQuery.setCoordinateLongitudeTwo(getIntValue(inputCoordinateTwoLongitude));
+			databaseQuery.setTimeStep(getIntValue(inputTimeStep));
 			databaseQuery.setStartDateTime(getDateFromComboBox(comboBoxFromYears, comboBoxFromMonths, comboBoxFromDays, comboBoxFromHours, comboBoxFromMinutes));
 			databaseQuery.setEndDateTime(getDateFromComboBox(comboBoxToYears, comboBoxToMonths, comboBoxToDays, comboBoxToHours, comboBoxToMinutes));
-			resultsPanel.updateExpirement(dao.get(databaseQuery));
+			databaseQuery.setAxialTilt(Double.parseDouble(inputAxialTilt.getText()));
+			databaseQuery.setOrbitalEccentricity(Double.parseDouble(inputOrbitalEccentricity.getText()));
+			databaseQuery.setGridSpacing(getIntValue(inputGridSpacing));
+			databaseQuery.setDataPrecision(params.getDataPrecision());
+			databaseQuery.setGeoPrecision(params.getGeographicPrecision());
+			databaseQuery.setTemporalPrecision(params.getTemporalPrecision());
+
+			resultsPanel.updateExpirement(dao.get(databaseQuery), databaseQuery);
 		}
 	}
 

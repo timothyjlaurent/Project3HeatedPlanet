@@ -5,7 +5,7 @@
  
 <hibernate-configuration>
     <session-factory>
-        <property name="hibernate.show_sql">false</property>
+        <property name="hibernate.show_sql">true</property>
         <property name="hibernate.format_sql">true</property>
         <property name="use_sql_comments">false</property>
  
@@ -17,6 +17,6 @@
  
         <!-- add classes to map from here -->
         <mapping class="models.Experiment" />
-        <mapping class="models.GridPoints" />
+        <mapping class="models.GridPoint" />
     </session-factory>
 </hibernate-configuration>
