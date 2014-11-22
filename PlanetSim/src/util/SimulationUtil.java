@@ -7,6 +7,11 @@ import static java.lang.Math.min;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import models.GridPoint;
@@ -53,16 +58,35 @@ public class SimulationUtil {
 
 	public static GridPoint[][] convertSetToGrid(final Set<GridPoint> gridPoints, final int gridSpacing) {
 		final int numOfCols = 360 / gridSpacing;
-		final GridPoint[][] gridPointGrid = new GridPoint[numOfCols][numOfCols / 2];
+		final int numOfRows = 180 / gridSpacing;
+		final GridPoint[][] gridPointGrid = new GridPoint[numOfCols][numOfRows];
 		for (final GridPoint gridPoint : gridPoints) {
 			final int x = (180 + gridPoint.getLeftLongitude()) / gridSpacing;
 			final int y = (90 - gridPoint.getTopLatitude()) / gridSpacing;
 			gridPointGrid[x][y] = gridPoint;
 		}
-
-		// final int x = 180 + gridPoint.getLeftLongitude();
-		// final int y = (gridPoint.getTopLatitude() - 90) / 15;
-
 		return gridPointGrid;
+	}
+
+	public static Map<Date, Set<GridPoint>> convertSetToMap(final Set<GridPoint> gridPoints) {
+		final Map<Date, Set<GridPoint>> map = new HashMap<Date, Set<GridPoint>>();
+		for (final GridPoint gridPoint : gridPoints) {
+			if (map.get(gridPoint.getDateTime()) == null) {
+				final HashSet<GridPoint> newHashSet = new HashSet<GridPoint>();
+				newHashSet.add(gridPoint);
+				map.put(gridPoint.getDateTime(), newHashSet);
+			} else {
+				map.get(gridPoint.getDateTime()).add(gridPoint);
+			}
+		}
+		return map;
+	}
+
+	public static Set<GridPoint> convertMapToSet(final Map<Date, Set<GridPoint>> gridPoints) {
+		final HashSet<GridPoint> set = new HashSet<GridPoint>();
+		for (final Entry<Date, Set<GridPoint>> gridPointEntry : gridPoints.entrySet()) {
+			set.addAll(gridPointEntry.getValue());
+		}
+		return set;
 	}
 }

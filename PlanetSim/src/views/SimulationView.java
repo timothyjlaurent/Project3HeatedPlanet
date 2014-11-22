@@ -24,6 +24,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
@@ -35,11 +37,13 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import models.CommandLineParam;
+import models.DatabaseQuery;
 import models.Experiment;
 import models.GridPoint;
 import models.PhysicalFactors;
 import models.SimulationSettings;
 import models.SimulationStats;
+import util.DatabaseQueryBuilder;
 import constants.SimulationConstants;
 import controllers.SimulationController;
 import cs6310.gui.widget.earth.EarthPanel;
@@ -81,8 +85,10 @@ public class SimulationView extends JPanel implements ActionListener {
 	private EarthPanel earthPanel;
 	private Timer timer;
 	private Experiment experiment;
-	private boolean showAnimation;
+	private boolean showAnimation = true;
 	private int minutesTimePassed = 0;
+
+	private HashSet<GridPoint> newGridPoints;
 
 	public SimulationView(final CommandLineParam params, final DatabaseDao dao) {
 		this.params = params;
@@ -172,7 +178,6 @@ public class SimulationView extends JPanel implements ActionListener {
 		inputShowAnimation = new JCheckBox();
 		inputShowAnimation.setSelected(true);
 		inputShowAnimation.addItemListener(new ItemListener() {
-
 			@Override
 			public void itemStateChanged(final ItemEvent e) {
 				showAnimation = inputShowAnimation.isSelected();
@@ -258,6 +263,7 @@ public class SimulationView extends JPanel implements ActionListener {
 
 	private void setDefaultButtonsEnabledStatus() {
 		buttonStart.setEnabled(true);
+		buttonStart.setText("Start");
 		buttonPause.setEnabled(false);
 		buttonStop.setEnabled(false);
 	}
@@ -292,12 +298,33 @@ public class SimulationView extends JPanel implements ActionListener {
 				buttonStart.setEnabled(false);
 				buttonPause.setEnabled(true);
 				buttonStop.setEnabled(true);
-				if ("Start".equals(buttonStart.getText())) {
-					experiment = SimulationController.initializeGridPoints(params, getSimulationSettings(), getPhysicalFactors(), SimulationConstants.DEFAULT_START_DATE);
-					earthPanel = new EarthPanel(getIntValue(inputGridSpacing));
-					this.add(earthPanel, BorderLayout.CENTER);
+
+				final Calendar endDate = Calendar.getInstance();
+				endDate.setTime(SimulationConstants.DEFAULT_START_DATE.getTime());
+				endDate.add(Calendar.MINUTE, getSimulationSettings().getSimulationLength() * 525600 / 12);
+
+				final DatabaseQuery query = new DatabaseQueryBuilder().experiment(new Experiment(params, getSimulationSettings(), getPhysicalFactors())).startDateTime(SimulationConstants.DEFAULT_START_DATE.getTime()).endDateTime(endDate.getTime()).coordinateLatitudeOne(-90).coordinateLatitudeTwo(90).coordinateLongitudeOne(-180).coordinateLongitudeTwo(180).build();
+				final List<Experiment> list = dao.get(query);
+				System.out.println(list);
+				if (list.isEmpty()) {
+					if ("Start".equals(buttonStart.getText())) {
+						experiment = SimulationController.initializeGridPoints(params, getSimulationSettings(), getPhysicalFactors(), SimulationConstants.DEFAULT_START_DATE);
+						newGridPoints = new HashSet<GridPoint>();
+						for (final GridPoint point : experiment.getGridPoints()) {
+							try {
+								newGridPoints.add(point.clone());
+							} catch (final CloneNotSupportedException e) {
+								e.printStackTrace();
+							}
+						}
+						if (showAnimation) {
+							earthPanel = new EarthPanel(getIntValue(inputGridSpacing));
+							earthPanel.updateGrid(experiment.getGridPoints());
+							this.add(earthPanel, BorderLayout.CENTER);
+						}
+					}
+					start(experiment, getIntValue(inputDisplayRate) * 1000);
 				}
-				start(experiment, getIntValue(inputDisplayRate) * 1000);
 				buttonStart.setText("Resume");
 			} else {
 				System.err.println("Please enter valid inputs.");
@@ -309,6 +336,7 @@ public class SimulationView extends JPanel implements ActionListener {
 			stop();
 		} else if (source == buttonStop) {
 			enableInputs();
+			experiment.setGridPoints(newGridPoints);
 			dao.saveOrUpdate(experiment);
 			buttonStart.setText("Start");
 			setDefaultControlValues();
@@ -322,30 +350,28 @@ public class SimulationView extends JPanel implements ActionListener {
 		stop();
 		timer = new Timer(displayRate, new ActionListener() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(final ActionEvent event) {
 				if (minutesTimePassed >= experiment.getSimulationSettings().getSimulationLength() * 525600 / 12) {
-					enableInputs();
 					dao.saveOrUpdate(experiment);
-					buttonStart.setText("Start");
-					setDefaultControlValues();
 					setDefaultButtonsEnabledStatus();
 					stop();
 				} else {
+					minutesTimePassed += experiment.getSimulationSettings().getTimeStep();
+					final Set<GridPoint> gridPoints = simulateIteration(experiment, minutesTimePassed);
+					newGridPoints.addAll((Set<GridPoint>) ((HashSet<GridPoint>) gridPoints).clone());
+					experiment.setGridPoints((HashSet<GridPoint>) newGridPoints.clone());
 					if (showAnimation) {
-						earthPanel.updateGrid(experiment.getGridPointMap().get(getSimulationDate(minutesTimePassed)));
+						earthPanel.updateGrid(gridPoints);
 					}
-					final SimulationStats stats = calculateSimulationStats(experiment.getGridPointMap().get(getSimulationDate(minutesTimePassed)));
+
+					final SimulationStats stats = calculateSimulationStats(gridPoints);
 					labelDateTime.setText(DF.format(new Date(getSimulationDate(minutesTimePassed).getTime())));
 					labelMaxTemp.setText(DEC_FMT.format(stats.getMax()));
 					labelMinTemp.setText(DEC_FMT.format(stats.getMin()));
 					labelStdDeviation.setText(DEC_FMT.format(stats.getStandardDeviation()));
 					labelMean.setText(DEC_FMT.format(stats.getMean()));
-
-					final Set<GridPoint> gridPoints = simulateIteration(experiment, minutesTimePassed);
-					experiment.getGridPointMap().put(getSimulationDate(minutesTimePassed + experiment.getSimulationSettings().getTimeStep()), gridPoints);
-					experiment.setGridPointMap(experiment.getGridPointMap());
-					minutesTimePassed += experiment.getSimulationSettings().getTimeStep();
 				}
 			}
 		});

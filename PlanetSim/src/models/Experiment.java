@@ -1,11 +1,6 @@
 package models;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -18,7 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @Entity
 @Table(name = "experiment")
@@ -42,8 +36,14 @@ public class Experiment {
 	@Embedded
 	private CommandLineParam commandLineParam;
 
-	@Transient
-	private Map<Date, Set<GridPoint>> mapOfGridPoints;
+	public Experiment() {
+	}
+
+	public Experiment(final CommandLineParam commandLineParam, final SimulationSettings simulationSettings, final PhysicalFactors physicalFactors) {
+		this.commandLineParam = commandLineParam;
+		this.physicalFactors = physicalFactors;
+		this.simulationSettings = simulationSettings;
+	}
 
 	public int getExperimentId() {
 		return experimentId;
@@ -51,32 +51,6 @@ public class Experiment {
 
 	public void setExperimentId(final int experimentId) {
 		this.experimentId = experimentId;
-	}
-
-	public Map<Date, Set<GridPoint>> getGridPointMap() {
-		if (mapOfGridPoints == null) {
-			mapOfGridPoints = new HashMap<Date, Set<GridPoint>>();
-			for (final GridPoint gridPoint : getGridPoints()) {
-				if (mapOfGridPoints.get(gridPoint) == null) {
-					mapOfGridPoints.put(gridPoint.getDateTime(), new HashSet<GridPoint>(Arrays.asList(gridPoint)));
-				} else {
-					mapOfGridPoints.get(gridPoint).add(gridPoint);
-				}
-			}
-		}
-		return mapOfGridPoints;
-	}
-
-	public void setGridPointMap(final Map<Date, Set<GridPoint>> mapOfGridPoints) {
-		this.mapOfGridPoints = mapOfGridPoints;
-		final Set<GridPoint> gridPoints = new HashSet<GridPoint>();
-		for (final Entry<Date, Set<GridPoint>> gridPointSet : mapOfGridPoints.entrySet()) {
-			for (final GridPoint gridPoint : gridPointSet.getValue()) {
-				gridPoint.setDateTime(gridPointSet.getKey());
-			}
-			gridPoints.addAll(gridPointSet.getValue());
-		}
-		setGridPoints(gridPoints);
 	}
 
 	public Set<GridPoint> getGridPoints() {
@@ -111,17 +85,9 @@ public class Experiment {
 		this.commandLineParam = commandLineParam;
 	}
 
-	public int getNumOfTimeSteps() {
-		return 5;
-	}
-
-	public int getNumOfRegions() {
-		return 5;
-	}
-
 	@Override
 	public String toString() {
-		return "Experiment [experimentId=" + experimentId + ", simulationSettings=" + simulationSettings + ", physicalFactors=" + physicalFactors + ", commandLineParam=" + commandLineParam + ", mapOfGridPoints=" + mapOfGridPoints + "]";
+		return "Experiment [experimentId=" + experimentId + " : " + gridPoints + "]";
 	}
 
 }

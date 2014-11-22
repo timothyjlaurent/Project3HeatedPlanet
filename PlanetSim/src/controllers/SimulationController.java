@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,26 +35,25 @@ import models.Experiment;
 import models.GridPoint;
 import models.PhysicalFactors;
 import models.SimulationSettings;
+import util.SimulationUtil;
 import constants.SimulationConstants;
 
 public class SimulationController {
 
+	private static Set<GridPoint> heatedGridPoint;
+
+	@SuppressWarnings("unchecked")
 	public static Set<GridPoint> simulateIteration(final Experiment experiment, final int timePassed) {
-		final Set<GridPoint> previousGridPointSet = new HashSet<GridPoint>(experiment.getGridPointMap().get(getMaxDate(experiment)));
+		final Map<Date, Set<GridPoint>> map = SimulationUtil.convertSetToMap(experiment.getGridPoints());
+		final HashSet<GridPoint> previousGridPointSet = (HashSet<GridPoint>) ((HashSet<GridPoint>) map.get(getMaxDate(map))).clone();
 		double heatPerIteration = diffuseHeatFromNeighbors(experiment, previousGridPointSet);
-		heatPerIteration += heatGridFromSun(experiment, timePassed, previousGridPointSet);
-		coolEarth(experiment, heatPerIteration, previousGridPointSet);
-		final Calendar cal = Calendar.getInstance();
-		for (final GridPoint gridPoint : previousGridPointSet) {
-			cal.setTime(gridPoint.getDateTime());
-			cal.add(Calendar.MINUTE, timePassed);
-			gridPoint.setDateTime(cal.getTime());
-		}
-		return previousGridPointSet;
+		heatPerIteration += heatGridFromSun(experiment, timePassed, heatedGridPoint);
+		coolEarth(experiment, heatPerIteration, heatedGridPoint);
+		return (Set<GridPoint>) ((HashSet<GridPoint>) heatedGridPoint).clone();
 	}
 
-	private static Date getMaxDate(final Experiment experiment) {
-		final List<Date> dates = new ArrayList<Date>(experiment.getGridPointMap().keySet());
+	private static Date getMaxDate(final Map<Date, Set<GridPoint>> map) {
+		final List<Date> dates = new ArrayList<Date>(map.keySet());
 		Collections.sort(dates);
 		return dates.get(dates.size() - 1);
 	}
@@ -66,8 +64,7 @@ public class SimulationController {
 		experiment.setSimulationSettings(simulationSettings);
 		experiment.setPhysicalFactors(physicalFactors);
 
-		final Map<Date, Set<GridPoint>> gridPoints = new HashMap<Date, Set<GridPoint>>();
-		final Set<GridPoint> gridPointSet = new HashSet<GridPoint>();
+		final HashSet<GridPoint> gridPointSet = new HashSet<GridPoint>();
 		for (int i = 0; i < WIDTH_IN_DEGREES; i += experiment.getSimulationSettings().getGridSpacing()) {
 			for (int j = 0; j < HEIGHT_IN_DEGREES; j += experiment.getSimulationSettings().getGridSpacing()) {
 				final GridPoint gridPoint = new GridPoint();
@@ -78,8 +75,7 @@ public class SimulationController {
 				gridPointSet.add(gridPoint);
 			}
 		}
-		gridPoints.put(startDate.getTime(), gridPointSet);
-		experiment.setGridPointMap(gridPoints);
+		experiment.setGridPoints(gridPointSet);
 		return experiment;
 	}
 
@@ -162,12 +158,12 @@ public class SimulationController {
 		}
 	}
 
-	private static double diffuseHeatFromNeighbors(final Experiment experiment, Set<GridPoint> gridPoints) {
+	private static double diffuseHeatFromNeighbors(final Experiment experiment, final Set<GridPoint> gridPoints) {
 
 		double heatChange = 0;
-		final Set<GridPoint> heatedGridPoint = new HashSet<GridPoint>();
+		heatedGridPoint = new HashSet<GridPoint>();
 		for (final GridPoint gridPoint : gridPoints) {
-			final GridPoint newGridPoint = gridPoint;
+			final GridPoint newGridPoint = new GridPoint();
 			final double verticalSideLength = calculateVerticalSideLength(experiment);
 			final double northSideLength = calculateNorthSideLength(experiment, gridPoint, verticalSideLength);
 			final double southSideLength = calculateSouthSideLength(gridPoint, verticalSideLength);
@@ -186,10 +182,15 @@ public class SimulationController {
 			heatChange += (newTemp * calculateSurfaceArea(experiment, gridPoint)) - gridPoint.getTemperature() * calculateSurfaceArea(experiment, gridPoint);
 
 			newGridPoint.setTemperature(newTemp);
+			newGridPoint.setLeftLongitude(gridPoint.getLeftLongitude());
+			newGridPoint.setTopLatitude(gridPoint.getTopLatitude());
+
+			final Calendar cal = Calendar.getInstance();
+			cal.setTime(gridPoint.getDateTime());
+			cal.add(Calendar.MINUTE, experiment.getSimulationSettings().getTimeStep());
+			newGridPoint.setDateTime(cal.getTime());
 			heatedGridPoint.add(newGridPoint);
 		}
-
-		gridPoints = heatedGridPoint;
 		return heatChange;
 	}
 

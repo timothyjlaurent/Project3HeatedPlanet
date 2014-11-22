@@ -1,5 +1,6 @@
 package models;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -12,7 +13,9 @@ import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "grid_points")
-public class GridPoint implements Comparable<GridPoint> {
+public class GridPoint implements Comparable<GridPoint>, Cloneable, Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue
@@ -76,14 +79,10 @@ public class GridPoint implements Comparable<GridPoint> {
 	}
 
 	@Override
-	public String toString() {
-		return "GridPoint [topLatitude=" + topLatitude + ", leftLongitude=" + leftLongitude + ", temperature=" + temperature + ", date=" + dateTime + "]";
-	}
-
-	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((dateTime == null) ? 0 : dateTime.hashCode());
 		result = prime * result + leftLongitude;
 		result = prime * result + topLatitude;
 		return result;
@@ -101,6 +100,13 @@ public class GridPoint implements Comparable<GridPoint> {
 			return false;
 		}
 		final GridPoint other = (GridPoint) obj;
+		if (dateTime == null) {
+			if (other.dateTime != null) {
+				return false;
+			}
+		} else if (!dateTime.equals(other.dateTime)) {
+			return false;
+		}
 		if (leftLongitude != other.leftLongitude) {
 			return false;
 		}
@@ -120,4 +126,19 @@ public class GridPoint implements Comparable<GridPoint> {
 		return c;
 	}
 
+	@Override
+	public String toString() {
+		return "GridPoint [topLatitude=" + topLatitude + ", leftLongitude=" + leftLongitude + ", dateTime=" + dateTime + "]";
+	}
+
+	@Override
+	public GridPoint clone() throws CloneNotSupportedException {
+		final GridPoint gridPoint = new GridPoint();
+		gridPoint.setDateTime(dateTime);
+		gridPoint.setGridId(gridId);
+		gridPoint.setLeftLongitude(leftLongitude);
+		gridPoint.setTopLatitude(topLatitude);
+		gridPoint.setTemperature(temperature);
+		return gridPoint;
+	}
 }
