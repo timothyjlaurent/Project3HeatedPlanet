@@ -16,7 +16,6 @@ import models.GridPoint;
 public class EarthPanel extends JPanel {
 
 	private static final long serialVersionUID = -1108120537851962997L;
-	private final SunDisplay sunDisplay;
 	private final EarthGridDisplay earth;
 
 	/**
@@ -30,10 +29,6 @@ public class EarthPanel extends JPanel {
 		earth = new EarthGridDisplay(gridSpacing);
 		earth.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-		sunDisplay = new SunDisplay(earth.getWidth());
-		sunDisplay.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-		add(sunDisplay);
 		add(earth);
 	}
 
@@ -46,7 +41,6 @@ public class EarthPanel extends JPanel {
 	 */
 	public void drawGrid(final int degreeSeparation) {
 		earth.setGranularity(degreeSeparation);
-		sunDisplay.drawSunPath(earth.getWidth());
 		repaint();
 	}
 
@@ -62,11 +56,19 @@ public class EarthPanel extends JPanel {
 	/**
 	 * Updates the display with the values from the temperature grid.
 	 * 
+	 * @param max
+	 * @param min
+	 * 
 	 * @param grid
 	 *            the grid to get the new temperature values from
 	 */
-	public void updateGrid(final Set<GridPoint> gridPoints) {
-		earth.updateGrid(gridPoints);
+	public void updateGrid(final Set<GridPoint> gridPoints, final double min, final double max, final double sunLat, final double sunLong) {
+		earth.updateGrid(gridPoints, min, max, sunLat, sunLong);
+		earth.revalidate();
+	}
+
+	public void updateGrid(final Set<GridPoint> gridPoints, final double sunLat, final double sunLong) {
+		earth.updateGrid(gridPoints, 287, 289, sunLat, sunLong);
 		earth.revalidate();
 	}
 
@@ -77,7 +79,7 @@ public class EarthPanel extends JPanel {
 	 *            the number of degrees to move the sun
 	 */
 	public void moveSunPosition(final float degrees) {
-		sunDisplay.moveSunPosition(degrees);
+		// sunDisplay.moveSunPosition(degrees);
 		repaint();
 	}
 
@@ -85,7 +87,7 @@ public class EarthPanel extends JPanel {
 	 * Resets the earth display and sun position.
 	 */
 	public void reset() {
-		sunDisplay.reset();
+		// sunDisplay.reset();
 		earth.reset();
 		repaint();
 	}

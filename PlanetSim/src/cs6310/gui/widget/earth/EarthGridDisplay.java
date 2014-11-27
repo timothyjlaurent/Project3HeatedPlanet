@@ -10,6 +10,7 @@ import java.util.Set;
 import javax.swing.JPanel;
 
 import models.GridPoint;
+import models.SimulationStats;
 import util.SimulationUtil;
 
 /**
@@ -18,6 +19,7 @@ import util.SimulationUtil;
  * access - these methods should be interacted with from the {@link EarthPanel}.
  * 
  * @author Andrew Bernard
+ * 
  */
 public class EarthGridDisplay extends JPanel {
 	private static final long serialVersionUID = -1108120968981962997L;
@@ -41,6 +43,11 @@ public class EarthGridDisplay extends JPanel {
 	private int radius;
 	private boolean paintInitialColors = true;
 	private Set<GridPoint> gridPoints;
+	private SimulationStats stats;
+	private double min;
+	private double max;
+	private double sunLat;
+	private double sunLng;
 
 	/**
 	 * Constructs a display grid with a default grid spacing.
@@ -89,21 +96,45 @@ public class EarthGridDisplay extends JPanel {
 		}
 		drawTransparentImage(g);
 		drawGrid(g);
+		drawSun(g);
+	}
+
+	private void drawSun(final Graphics g) {
+		final int pixelWidth = earthImage.getWidth();
+		final int pixelHeight = earthImage.getHeight();
+		final double normLat = sunLng % 360;
+		final int x = (int) ((normLat >= -180) ? pixelWidth / 2 + normLat / 360 * pixelWidth : pixelWidth + (normLat + 180) / 360 * pixelWidth); // center
+
+		final int y = (int) (pixelHeight / 2 - sunLat / 180 * pixelHeight);
+
+		g.setColor(Color.yellow);
+		final int diameter = 10;
+		g.fillOval(x - diameter / 2, y - diameter / 2, diameter, diameter);
+
 	}
 
 	private void initCellColors(final Graphics g) {
-		g.setColor(colorPicker.getColor(273, 272, 274));
+		g.setColor(colorPicker.getColor(288, 287, 289));
 		g.fillRect(0, 0, imgWidth, imgHeight);
 	}
 
 	/**
 	 * Updates the display with the values from the temperature grid.
 	 * 
+	 * @param max
+	 * @param min
+	 * @param sunLong
+	 * @param sunLat
+	 * 
 	 * @param grid
 	 *            the grid to get the new temperature values from
 	 */
-	void updateGrid(final Set<GridPoint> gridPoints) {
+	void updateGrid(final Set<GridPoint> gridPoints, final double min, final double max, final double sunLat, final double sunLong) {
 		this.gridPoints = gridPoints;
+		this.min = min;
+		this.max = max;
+		this.sunLat = sunLat;
+		sunLng = sunLong;
 		paintInitialColors = false;
 		imgTransparent = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_INT_ARGB);
 		final Graphics g = imgTransparent.getGraphics();
@@ -134,15 +165,15 @@ public class EarthGridDisplay extends JPanel {
 		int cellX = 0, cellY = 0;
 		final int cellWidth = pixelsPerCellX;
 
-		final double[] minMax = getMinMax(gridPointGrid);
+		// final double[] minMax = getMinMax(gridPointGrid);
 
 		for (int x = 0; x < numCellsX; x++) {
 			for (int y = 0; y < numCellsY; y++) {
 				final double newTemp = gridPointGrid[x][y].getTemperature();
 				final int colorValue = new Double(newTemp).intValue();
-				final int cellHeight = getCellHeight(y);
-
-				g.setColor(colorPicker.getColor(colorValue, minMax[0], minMax[1]));
+				// final int cellHeight = getCellHeight(y);
+				final int cellHeight = pixelsPerCellY;
+				g.setColor(colorPicker.getColor(colorValue, min, max));
 				g.fillRect(cellX, cellY, cellWidth, cellHeight);
 				cellY += cellHeight;
 			}
@@ -151,19 +182,19 @@ public class EarthGridDisplay extends JPanel {
 		}
 	}
 
-	private double[] getMinMax(final GridPoint[][] gridPointGrid) {
-		double min = Double.POSITIVE_INFINITY;
-		double max = Double.NEGATIVE_INFINITY;
-		for (final GridPoint[] element : gridPointGrid) {
-			for (int j = 0; j < gridPointGrid[0].length; j += 1) {
-				min = Math.min(min, element[j].getTemperature());
-				max = Math.max(max, element[j].getTemperature());
-			}
-		}
-
-		final double[] minMax = { min, max };
-		return minMax;
-	}
+	// private double[] getMinMax(final GridPoint[][] gridPointGrid) {
+	// double min = Double.POSITIVE_INFINITY;
+	// double max = Double.NEGATIVE_INFINITY;
+	// for (final GridPoint[] element : gridPointGrid) {
+	// for (int j = 0; j < gridPointGrid[0].length; j += 1) {
+	// min = Math.min(min, element[j].getTemperature());
+	// max = Math.max(max, element[j].getTemperature());
+	// }
+	// }
+	//
+	// final double[] minMax = { min, max };
+	// return minMax;
+	// }
 
 	private int getCellHeight(final int col) {
 		final int lat1 = 90 - (col * degreeSeparation);
@@ -189,8 +220,16 @@ public class EarthGridDisplay extends JPanel {
 		}
 
 		// draw scaled latitude lines
-		for (int lat = 0; lat <= 90; lat += degreeSeparation) {
-			final int y = (int) Util.getDistToEquator(lat, radius);
+		// latitude shouldn't be scaled
+		// for (int lat = 0; lat <= 90; lat += degreeSeparation) {
+		// final int y = (int) Util.getDistToEquator(lat, radius);
+		// g.drawLine(0, radius - y, imgWidth, radius - y);
+		// g.drawLine(0, radius + y, imgWidth, radius + y);
+		// }
+
+		for (int y = 0; y <= imgHeight / 2; y += pixelsPerCellY) {
+			// final int y = (int) Util.getDistToEquator(lat, radius);
+			// final int y = pixelsPerCellY;
 			g.drawLine(0, radius - y, imgWidth, radius - y);
 			g.drawLine(0, radius + y, imgWidth, radius + y);
 		}

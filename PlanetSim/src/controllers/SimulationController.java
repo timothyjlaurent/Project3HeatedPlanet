@@ -38,6 +38,54 @@ import constants.SimulationConstants;
 public class SimulationController {
 	public static Integer TimeEquinox;
 	private static Set<GridPoint> heatedGridPoint;
+	private static double sunLat;
+	private static double sunLong;
+	private static double sunDist;
+	private static double sunDistMin;
+	private static double orbitalPos;
+	private static double sunMaxDist;
+
+	/**
+	 * @return the sunLat
+	 */
+	public static double getSunLat() {
+		return sunLat;
+	}
+
+	/**
+	 * @return the sunLong
+	 */
+	public static double getSunLong() {
+		return sunLong;
+	}
+
+	/**
+	 * @return the sunDist
+	 */
+	public static double getSunDist() {
+		return sunDist;
+	}
+
+	/**
+	 * @return the sunDistMin
+	 */
+	public static double getSunDistMin() {
+		return sunDistMin;
+	}
+
+	/**
+	 * @return the orbitalPos
+	 */
+	public static double getOrbitalPos() {
+		return orbitalPos;
+	}
+
+	/**
+	 * @return the sunMaxDist
+	 */
+	public static double getSunMaxDist() {
+		return sunMaxDist;
+	}
 
 	@SuppressWarnings("unchecked")
 	public static Set<GridPoint> simulateIteration(final Experiment experiment, final int timePassed) {
@@ -46,6 +94,12 @@ public class SimulationController {
 		double heatPerIteration = diffuseHeatFromNeighbors(experiment, previousGridPointSet);
 		heatPerIteration += heatGridFromSun(experiment, timePassed, heatedGridPoint);
 		coolEarth(experiment, heatPerIteration, heatedGridPoint);
+
+		sunLat = computeSunNoonLatitude(experiment, timePassed);
+		sunLong = computeSunNoonLongitude(timePassed);
+		sunDist = getSolarDistance(experiment, timePassed);
+		orbitalPos = Math.toDegrees(computeRotationalAngle(experiment, timePassed));
+
 		return (Set<GridPoint>) ((HashSet<GridPoint>) heatedGridPoint).clone();
 	}
 
@@ -82,6 +136,14 @@ public class SimulationController {
 			}
 		}
 		experiment.setGridPoints(gridPointSet);
+		sunLat = computeSunNoonLatitude(experiment, 0);
+		sunLong = computeSunNoonLongitude(0);
+		sunDist = getSolarDistance(experiment, 0);
+		orbitalPos = Math.toDegrees(computeRotationalAngle(experiment, 0));
+
+		sunDistMin = sunDist;
+		sunMaxDist = getSolarDistance(experiment, MINUTES_IN_YEAR / 2);
+
 		return experiment;
 	}
 
@@ -149,7 +211,7 @@ public class SimulationController {
 	}
 
 	private static double computeSunNoonLongitude(final int minutesFromStart) {
-		return (minutesFromStart % MINUTES_IN_DAY) * WIDTH_IN_DEGREES / MINUTES_IN_DAY;
+		return -(minutesFromStart % MINUTES_IN_DAY) * WIDTH_IN_DEGREES / MINUTES_IN_DAY;
 	}
 
 	private static double computeRotationalAngle(final Experiment experiment, final int minutesFromStart) {
@@ -239,7 +301,8 @@ public class SimulationController {
 			final double southTemp = northSideLength / gridPerimeter * getNeigbhorGridPoint(gridPoints, latitude, longitude + gridSpacing).getTemperature();
 			final double neighborTemp = eastTemp + westTemp + northTemp + southTemp;
 
-			final double newTemp = (neighborTemp + gridPoint.getTemperature()) / 2;
+			// changed to give double weight to current temp
+			final double newTemp = (neighborTemp + 2 * gridPoint.getTemperature()) / 3;
 			heatChange += (newTemp * SimulationUtil.calculateSurfaceArea(experiment, gridPoint)) - gridPoint.getTemperature() * SimulationUtil.calculateSurfaceArea(experiment, gridPoint);
 
 			newGridPoint.setTemperature(newTemp);
@@ -262,7 +325,7 @@ public class SimulationController {
 
 		double heatGain = 0;
 		for (final GridPoint gridPoint : gridPoints) {
-			final double zenithAngle = calculateSolarZenith(gridPoint, longitudeOfSun, latitudeOfSun);
+			final double zenithAngle = calculateSolarZenith(gridPoint, longitudeOfSun, latitudeOfSun, experiment);
 			final double tempIncrease = cos(zenithAngle) > 0 ? SOLAR_CONSTANT * proportionRadiation * cos(zenithAngle) * experiment.getSimulationSettings().getTimeStep() : 0;
 			heatGain += SimulationUtil.calculateSurfaceArea(experiment, gridPoint) * tempIncrease;
 			gridPoint.setTemperature(gridPoint.getTemperature() + tempIncrease);
@@ -275,10 +338,11 @@ public class SimulationController {
 		return longitudeOfPoint - longitudeOfSun;
 	}
 
-	private static double calculateSolarZenith(final GridPoint gridPpoint, final double longitudeOfSun, final double latitudeOfSun) {
-		final double hourAngle = toRadians(calculateLocalHourAngle(longitudeOfSun, gridPpoint.getLeftLongitude()));
+	private static double calculateSolarZenith(final GridPoint gridPoint, final double longitudeOfSun, final double latitudeOfSun, final Experiment experiment) {
+		final double gridSpacing = experiment.getSimulationSettings().getGridSpacing();
+		final double hourAngle = toRadians(calculateLocalHourAngle(longitudeOfSun, gridPoint.getLeftLongitude() - gridSpacing / 2));
 		final double declinationOfSun = toRadians(latitudeOfSun);
-		final double pointLatitude = toRadians(gridPpoint.getTopLatitude());
+		final double pointLatitude = toRadians(gridPoint.getTopLatitude() + gridSpacing / 2);
 		final double solarElevationAngle = asin(cos(hourAngle) * cos(declinationOfSun) * cos(pointLatitude) + sin(declinationOfSun) * sin(pointLatitude));
 		return PI / 2 - solarElevationAngle;
 	}

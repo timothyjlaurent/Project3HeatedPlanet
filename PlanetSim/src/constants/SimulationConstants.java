@@ -32,6 +32,6 @@ public class SimulationConstants {
 	public static final double DEGREES_ROTATED_PER_MINUTE = 360.0 / 1440.0;
 	public static final double HEAT_PER_MINUTE = 5000;
 	public static final int MINUTES_IN_DAY = 1440;
-	public static double SOLAR_CONSTANT = 1.2; // this is the solar constant of
+	public static double SOLAR_CONSTANT = 1.1; // this is the solar constant of
 
 }

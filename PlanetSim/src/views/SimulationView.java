@@ -78,6 +78,8 @@ public class SimulationView extends JPanel implements ActionListener {
 	private final JLabel labelMaxTemp = new JLabel();
 	private final JLabel labelStdDeviation = new JLabel();
 	private final JLabel labelMean = new JLabel();
+	private final JLabel labelOrbitalPosition = new JLabel();
+	private final JLabel labelRotationalPosition = new JLabel();
 
 	private final CommandLineParam params;
 	private final DatabaseDao dao;
@@ -136,7 +138,7 @@ public class SimulationView extends JPanel implements ActionListener {
 		settingsPanel.add(inputSimulationName, valueConstraints);
 
 		// Axial Tilt
-		final JLabel labelAxialTilt = new JLabel("Axial Tilt:");
+		final JLabel labelAxialTilt = new JLabel("Axial Tilt(degrees):");
 		settingsPanel.add(labelAxialTilt, labelConstraints);
 		inputAxialTilt = new JFormattedTextField(buildNumberFormatter(-180.00, 180.00, 2));
 		inputAxialTilt.setColumns(5);
@@ -150,29 +152,29 @@ public class SimulationView extends JPanel implements ActionListener {
 		settingsPanel.add(inputOrbitalEccentricity, valueConstraints);
 
 		// Time Step
-		final JLabel labelTimeStep = new JLabel("Time Step:");
+		final JLabel labelTimeStep = new JLabel("Time Step(min):");
 		settingsPanel.add(labelTimeStep, labelConstraints);
 		inputTimeStep = new JFormattedTextField(buildNumberFormatter(1, 525600));
 		inputTimeStep.setColumns(5);
 		settingsPanel.add(inputTimeStep, valueConstraints);
 
 		// Grid Spacing
-		settingsPanel.add(new JLabel("Grid Spacing:"), labelConstraints);
+		settingsPanel.add(new JLabel("Grid Spacing(degrees):"), labelConstraints);
 		inputGridSpacing = new JFormattedTextField(buildNumberFormatter(1, 180));
 		inputGridSpacing.setColumns(5);
 		settingsPanel.add(inputGridSpacing, valueConstraints);
 
 		// Simulation Length
-		settingsPanel.add(new JLabel("Simulation Length:"), labelConstraints);
+		settingsPanel.add(new JLabel("Simulation Length(months):"), labelConstraints);
 		inputSimulationLength = new JFormattedTextField(buildNumberFormatter(1, 120));
 		inputSimulationLength.setColumns(5);
 		settingsPanel.add(inputSimulationLength, valueConstraints);
 
 		// Display Rate
-		settingsPanel.add(new JLabel("Display Rate:"), labelConstraints);
+		settingsPanel.add(new JLabel("Display Rate(ms):"), labelConstraints);
 		// inputDisplayRate = new JFormattedTextField(buildNumberFormatter(1,
 		// 120));
-		inputDisplayRate = new JFormattedTextField(buildNumberFormatter(1, 120));
+		inputDisplayRate = new JFormattedTextField(buildNumberFormatter(1, 5000));
 		inputDisplayRate.setColumns(5);
 		settingsPanel.add(inputDisplayRate, valueConstraints);
 
@@ -208,10 +210,10 @@ public class SimulationView extends JPanel implements ActionListener {
 		informationPanel.add(labelDateTime, valueConstraints);
 
 		informationPanel.add(new JLabel("Orbital Position:"), labelConstraints);
-		informationPanel.add(new JLabel("TODO"), valueConstraints);
+		informationPanel.add(labelOrbitalPosition, valueConstraints);
 
 		informationPanel.add(new JLabel("Rotational Position:"), labelConstraints);
-		informationPanel.add(new JLabel("TODO"), valueConstraints);
+		informationPanel.add(labelRotationalPosition, valueConstraints);
 
 		informationPanel.add(new JLabel("Data Precision:"), labelConstraints);
 		informationPanel.add(new JLabel(Integer.toString(params.getDataPrecision())), valueConstraints);
@@ -259,7 +261,7 @@ public class SimulationView extends JPanel implements ActionListener {
 		inputSimulationLength.setText(Integer.toString(SimulationConstants.DEFAULT_SIM_LENGTH));
 		inputTimeStep.setText(Integer.toString(SimulationConstants.DEFAULT_TIME_STEP));
 		inputGridSpacing.setText(Integer.toString(SimulationConstants.DEFAULT_GRID_SPACING));
-		inputDisplayRate.setText(Integer.toString(2));
+		inputDisplayRate.setText(Integer.toString(500));
 
 	}
 
@@ -303,7 +305,7 @@ public class SimulationView extends JPanel implements ActionListener {
 
 				final Calendar endDate = Calendar.getInstance();
 				endDate.setTime(SimulationConstants.DEFAULT_START_DATE.getTime());
-				endDate.add(Calendar.MINUTE, getSimulationSettings().getSimulationLength() * 525600 / 12);
+				endDate.add(Calendar.MINUTE, getSimulationSettings().getSimulationLength() * SimulationConstants.MINUTES_IN_YEAR / 12);
 
 				final DatabaseQuery query = new DatabaseQueryBuilder().experiment(new Experiment(params, getSimulationSettings(), getPhysicalFactors())).startDateTime(SimulationConstants.DEFAULT_START_DATE.getTime()).endDateTime(endDate.getTime()).coordinateLatitudeOne(-90).coordinateLatitudeTwo(90).coordinateLongitudeOne(-180).coordinateLongitudeTwo(180).build();
 				final List<Experiment> list = dao.get(query);
@@ -321,11 +323,11 @@ public class SimulationView extends JPanel implements ActionListener {
 						}
 						if (showAnimation) {
 							earthPanel = new EarthPanel(getIntValue(inputGridSpacing));
-							earthPanel.updateGrid(experiment.getGridPoints());
+							earthPanel.updateGrid(experiment.getGridPoints(), SimulationController.getSunLat(), SimulationController.getSunLong());
 							this.add(earthPanel, BorderLayout.CENTER);
 						}
 					}
-					start(experiment, getIntValue(inputDisplayRate) * 1000);
+					start(experiment, getIntValue(inputDisplayRate));
 				}
 				buttonStart.setText("Resume");
 			} else {
@@ -355,7 +357,7 @@ public class SimulationView extends JPanel implements ActionListener {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void actionPerformed(final ActionEvent event) {
-				if (minutesTimePassed >= experiment.getSimulationSettings().getSimulationLength() * 525600 / 12) {
+				if (minutesTimePassed >= experiment.getSimulationSettings().getSimulationLength() * SimulationConstants.MINUTES_IN_YEAR / 12) {
 					dao.saveOrUpdate(experiment);
 					setDefaultButtonsEnabledStatus();
 					stop();
@@ -364,16 +366,21 @@ public class SimulationView extends JPanel implements ActionListener {
 					final Set<GridPoint> gridPoints = simulateIteration(experiment, minutesTimePassed);
 					newGridPoints.addAll((Set<GridPoint>) ((HashSet<GridPoint>) gridPoints).clone());
 					experiment.setGridPoints((HashSet<GridPoint>) newGridPoints.clone());
-					if (showAnimation) {
-						earthPanel.updateGrid(gridPoints);
-					}
 
 					final SimulationStats stats = calculateSimulationStats(gridPoints, experiment);
+
 					labelDateTime.setText(DF.format(new Date(getSimulationDate(minutesTimePassed).getTime())));
 					labelMaxTemp.setText(DEC_FMT.format(stats.getMax()));
 					labelMinTemp.setText(DEC_FMT.format(stats.getMin()));
 					labelStdDeviation.setText(DEC_FMT.format(stats.getStandardDeviation()));
 					labelMean.setText(DEC_FMT.format(stats.getMean()));
+					labelOrbitalPosition.setText(DEC_FMT.format(SimulationController.getOrbitalPos()));
+					labelRotationalPosition.setText(DEC_FMT.format(minutesTimePassed % 1440 / 1440 * 360));
+
+					if (showAnimation) {
+						earthPanel.updateGrid(gridPoints, stats.getMin(), stats.getMax(), SimulationController.getSunLat(), SimulationController.getSunLong());
+					}
+
 				}
 			}
 		});
