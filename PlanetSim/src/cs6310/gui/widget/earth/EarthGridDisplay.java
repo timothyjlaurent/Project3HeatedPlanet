@@ -92,7 +92,7 @@ public class EarthGridDisplay extends JPanel {
 	}
 
 	private void initCellColors(final Graphics g) {
-		g.setColor(colorPicker.getColor(DEFAULT_CELL_TEMP));
+		g.setColor(colorPicker.getColor(273, 272, 274));
 		g.fillRect(0, 0, imgWidth, imgHeight);
 	}
 
@@ -129,22 +129,40 @@ public class EarthGridDisplay extends JPanel {
 	}
 
 	private void fillCellColors(final Graphics g) {
+
 		final GridPoint[][] gridPointGrid = SimulationUtil.convertSetToGrid(gridPoints, degreeSeparation);
 		int cellX = 0, cellY = 0;
 		final int cellWidth = pixelsPerCellX;
+
+		final double[] minMax = getMinMax(gridPointGrid);
 
 		for (int x = 0; x < numCellsX; x++) {
 			for (int y = 0; y < numCellsY; y++) {
 				final double newTemp = gridPointGrid[x][y].getTemperature();
 				final int colorValue = new Double(newTemp).intValue();
 				final int cellHeight = getCellHeight(y);
-				g.setColor(colorPicker.getColor(colorValue));
+
+				g.setColor(colorPicker.getColor(colorValue, minMax[0], minMax[1]));
 				g.fillRect(cellX, cellY, cellWidth, cellHeight);
 				cellY += cellHeight;
 			}
 			cellX += cellWidth;
 			cellY = 0;
 		}
+	}
+
+	private double[] getMinMax(final GridPoint[][] gridPointGrid) {
+		double min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
+		for (final GridPoint[] element : gridPointGrid) {
+			for (int j = 0; j < gridPointGrid[0].length; j += 1) {
+				min = Math.min(min, element[j].getTemperature());
+				max = Math.max(max, element[j].getTemperature());
+			}
+		}
+
+		final double[] minMax = { min, max };
+		return minMax;
 	}
 
 	private int getCellHeight(final int col) {

@@ -40,16 +40,18 @@ public class QueryResultsView extends JPanel {
 	private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 
 	public QueryResultsView() {
+		setPreferredSize(new Dimension(1000, 475));
+
 		dataTable = new JTable(new DefaultTableModel(new Object[0][0], new Object[0]));
 		dataTable.setRowSelectionAllowed(false);
 		dataTable.getTableHeader().setReorderingAllowed(false);
-		dataTable.setPreferredSize(new Dimension(985, 450));
 		dataTable.setRowHeight(dataTable.getRowHeight() * 2);
 		dataTable.setAlignmentX(Component.LEFT_ALIGNMENT);
 		dataTable.setAlignmentY(Component.TOP_ALIGNMENT);
+		dataTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
 		final JScrollPane scollablePane = new JScrollPane(dataTable);
-		scollablePane.setPreferredSize(new Dimension(985, 500));
+		scollablePane.setPreferredSize(new Dimension(985, 425));
 		add(scollablePane);
 	}
 
@@ -76,44 +78,60 @@ public class QueryResultsView extends JPanel {
 				cal.setTime(query.getStartDateTime());
 				cal.add(Calendar.MINUTE, (i) * query.getTimeStep());
 				int pos = 1;
-
-				final ArrayList<GridPoint> points = new ArrayList<GridPoint>(map.get(cal.getTime()));
-				Collections.sort(points);
+				final ArrayList<GridPoint> points;
+				if (map.get(cal.getTime()) != null) {
+					points = new ArrayList<GridPoint>(map.get(cal.getTime()));
+					Collections.sort(points);
+				} else {
+					points = new ArrayList<GridPoint>();
+				}
 
 				for (int j = 0; j < numOfLatitudeSpaces; j++) {
-					final SimulationStats stats = SimulationUtil.calculateSimulationStats(new HashSet<GridPoint>(points));
+					final SimulationStats stats = SimulationUtil.calculateSimulationStats(new HashSet<GridPoint>(points), experiment.get(0));
 					for (int k = 0; k < numOfLongitudeSpaces; k++) {
-
 						final StringBuilder builder = new StringBuilder();
 						builder.append("<html>");
 						builder.append("<div style=\"text-align: left;\">");
 						builder.append("Lat:" + (min(query.getCoordinateLatitudeOne(), query.getCoordinateLatitudeTwo()) + j * query.getGridSpacing()));
 						builder.append("  |  ");
 						builder.append("Long:" + (min(query.getCoordinateLongitudeOne(), query.getCoordinateLongitudeTwo()) + k * query.getGridSpacing()));
-						builder.append("<br/>Min Temp:" + stats.getMin());
-						builder.append("@ " + getStringFromDate(stats.getMinDate(), false));
-						builder.append("<br/>Max Temp:" + stats.getMax());
-						builder.append("@ " + getStringFromDate(stats.getMaxDate(), false));
-						builder.append("<br/>Mean Temp:" + stats.getMean());
+
+						if (!points.isEmpty()) {
+							builder.append("<br/>Min Temp:" + stats.getMin());
+							builder.append("@ " + getStringFromDate(stats.getMinDate(), false));
+							builder.append("<br/>Max Temp:" + stats.getMax());
+							builder.append("@ " + getStringFromDate(stats.getMaxDate(), false));
+							builder.append("<br/>Mean Temp:" + stats.getMean());
+						}
+
 						builder.append("</div>");
 						builder.append("</html>");
 						experimentColumnHeaders[pos] = builder.toString();
-						experimentValues[i][pos] = Double.toString(points.get(pos - 1).getTemperature());
-
-						if (pointsPerRegion.get(i) == null) {
-							final Set<GridPoint> set = new HashSet<GridPoint>();
-							set.add(points.get(pos - 1));
-							pointsPerRegion.put(i, set);
+						if (!points.isEmpty() && points.get(pos - 1) != null) {
+							experimentValues[i][pos] = Double.toString(points.get(pos - 1).getTemperature());
+							if (pointsPerRegion.get(i) == null) {
+								final Set<GridPoint> set = new HashSet<GridPoint>();
+								set.add(points.get(pos - 1));
+								pointsPerRegion.put(i, set);
+							} else {
+								pointsPerRegion.get(i).add(points.get(pos - 1));
+							}
 						} else {
-							pointsPerRegion.get(i).add(points.get(pos - 1));
+							// TODO
+							experimentValues[i][pos] = "Need to interpolate";
 						}
+
 						pos++;
 					}
 				}
 
 				final String formattedDate = getStringFromDate(cal.getTime(), false);
-				final SimulationStats statsPerRegion = SimulationUtil.calculateSimulationStats(pointsPerRegion.get(i));
-				experimentValues[i][0] = formattedDate + "\nMean: " + statsPerRegion.getMean();
+				if (!pointsPerRegion.isEmpty() && pointsPerRegion.get(i) != null) {
+					final SimulationStats statsPerRegion = SimulationUtil.calculateSimulationStats(pointsPerRegion.get(i), experiment.get(0));
+					experimentValues[i][0] = formattedDate + "\nMean: " + statsPerRegion.getMean();
+				} else {
+					experimentValues[i][0] = formattedDate;
+				}
 			}
 
 			dataTable.setModel(new DefaultTableModel(experimentValues, experimentColumnHeaders) {
@@ -129,6 +147,8 @@ public class QueryResultsView extends JPanel {
 
 			final TableColumn tc = dataTable.getColumnModel().getColumn(0);
 			tc.setCellRenderer(new ScrollingTextAreaCellRenderer(2, 15));
+		} else {
+			dataTable.setModel(new DefaultTableModel(new Object[0][0], new Object[0]));
 		}
 	}
 

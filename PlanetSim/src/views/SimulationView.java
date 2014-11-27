@@ -173,6 +173,8 @@ public class SimulationView extends JPanel implements ActionListener {
 
 		// Display Rate
 		settingsPanel.add(new JLabel("Display Rate:"), labelConstraints);
+		// inputDisplayRate = new JFormattedTextField(buildNumberFormatter(1,
+		// 120));
 		inputDisplayRate = new JFormattedTextField(buildNumberFormatter(1, 120));
 		inputDisplayRate.setColumns(5);
 		settingsPanel.add(inputDisplayRate, valueConstraints);
@@ -372,7 +374,7 @@ public class SimulationView extends JPanel implements ActionListener {
 						earthPanel.updateGrid(gridPoints);
 					}
 
-					final SimulationStats stats = calculateSimulationStats(gridPoints);
+					final SimulationStats stats = calculateSimulationStats(gridPoints, experiment);
 					labelDateTime.setText(DF.format(new Date(getSimulationDate(minutesTimePassed).getTime())));
 					labelMaxTemp.setText(DEC_FMT.format(stats.getMax()));
 					labelMinTemp.setText(DEC_FMT.format(stats.getMin()));

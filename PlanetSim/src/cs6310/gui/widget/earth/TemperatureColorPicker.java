@@ -26,6 +26,26 @@ public class TemperatureColorPicker {
 		throw new CloneNotSupportedException("This is a singleton - please use the getInstance() method.");
 	}
 
+	// Adapted from
+	// http://stackoverflow.com/questions/20792445/calculate-rgb-value-for-a-range-of-values-to-create-heat-map
+	// def rgb(minimum, maximum, value):
+	// minimum, maximum = float(minimum), float(maximum)
+	// ratio = 2 * (value-minimum) / (maximum - minimum)
+	// b = int(max(0, 255*(1 - ratio)))
+	// r = int(max(0, 255*(ratio - 1)))
+	// g = 255 - b - r
+	// return r, g, b
+	// return (r,g,b)
+	public Color getColor(final int value, final double min, final double max) {
+
+		final double ratio = 2 * (value - min) / (max - min);
+		final int b = (int) (Math.max(0, 255 * (1 - ratio)));
+		final int r = (int) (Math.max(0, 255 * (ratio - 1)));
+		final int g = 255 - b - r;
+		return new Color(r, g, b);
+
+	}
+
 	/**
 	 * Maps a color to the given temperature.
 	 * 
