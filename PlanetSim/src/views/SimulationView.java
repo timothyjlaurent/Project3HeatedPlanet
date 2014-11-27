@@ -44,6 +44,7 @@ import models.PhysicalFactors;
 import models.SimulationSettings;
 import models.SimulationStats;
 import util.DatabaseQueryBuilder;
+import util.SimulationUtil;
 import constants.SimulationConstants;
 import controllers.SimulationController;
 import cs6310.gui.widget.earth.EarthPanel;
@@ -89,6 +90,8 @@ public class SimulationView extends JPanel implements ActionListener {
 	private int minutesTimePassed = 0;
 
 	private HashSet<GridPoint> newGridPoints;
+
+	private long simulationStart;
 
 	public SimulationView(final CommandLineParam params, final DatabaseDao dao) {
 		this.params = params;
@@ -305,9 +308,10 @@ public class SimulationView extends JPanel implements ActionListener {
 
 				final DatabaseQuery query = new DatabaseQueryBuilder().experiment(new Experiment(params, getSimulationSettings(), getPhysicalFactors())).startDateTime(SimulationConstants.DEFAULT_START_DATE.getTime()).endDateTime(endDate.getTime()).coordinateLatitudeOne(-90).coordinateLatitudeTwo(90).coordinateLongitudeOne(-180).coordinateLongitudeTwo(180).build();
 				final List<Experiment> list = dao.get(query);
-				System.out.println(list);
 				if (list.isEmpty()) {
 					if ("Start".equals(buttonStart.getText())) {
+						simulationStart = System.currentTimeMillis();
+						System.out.println("Simulation Started ");
 						experiment = SimulationController.initializeGridPoints(params, getSimulationSettings(), getPhysicalFactors(), SimulationConstants.DEFAULT_START_DATE);
 						newGridPoints = new HashSet<GridPoint>();
 						for (final GridPoint point : experiment.getGridPoints()) {
@@ -356,6 +360,8 @@ public class SimulationView extends JPanel implements ActionListener {
 				if (minutesTimePassed >= experiment.getSimulationSettings().getSimulationLength() * 525600 / 12) {
 					dao.saveOrUpdate(experiment);
 					setDefaultButtonsEnabledStatus();
+					System.out.println("Simulation Stopped: " + (System.currentTimeMillis() - simulationStart) / 1000 + "seconds");
+					System.out.println("Number of Dates Simulated: " + SimulationUtil.convertSetToMap(newGridPoints).keySet().size());
 					stop();
 				} else {
 					minutesTimePassed += experiment.getSimulationSettings().getTimeStep();

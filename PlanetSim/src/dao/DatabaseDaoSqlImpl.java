@@ -83,7 +83,7 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 	public void saveOrUpdate(final Experiment experiment) {
 		session = sessionFactory.openSession();
 		final Transaction tx = session.beginTransaction();
-		System.out.println("Saving");
+		System.out.println("Saving Experiment");
 		final Map<Date, Set<GridPoint>> map = convertSetToMap(experiment.getGridPoints());
 
 		// Remove dates due to precision
@@ -91,7 +91,7 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 		sort(dates);
 
 		final int tempPrecision = experiment.getCommandLineParam().getTemporalPrecision();
-		final int numOfDatesToKeep = dates.size() * (tempPrecision / 100);
+		final int numOfDatesToKeep = (int) (dates.size() * tempPrecision / 100.00);
 
 		for (int i = 1; i < dates.size(); i++) {
 			if (i % numOfDatesToKeep == 0) {
@@ -126,7 +126,7 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 			}
 		}
 		experiment.setGridPoints(new HashSet<GridPoint>(pointsToSave));
-		System.out.println(experiment.getGridPoints());
+		System.out.println("Number of Points Saved: " + pointsToSave.size());
 		session.saveOrUpdate(experiment);
 		tx.commit();
 		session.flush();

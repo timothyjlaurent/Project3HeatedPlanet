@@ -28,7 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import models.CommandLineParam;
-import models.DatabaseQuery;
+import util.DatabaseQueryBuilder;
 import constants.SimulationConstants;
 import dao.DatabaseDao;
 
@@ -64,7 +64,6 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 	private JButton buttonQuery;
 
 	private final DatabaseDao dao;
-	private DatabaseQuery databaseQuery;
 	private final QueryResultsView resultsPanel = new QueryResultsView();
 	private final CommandLineParam params;
 
@@ -281,29 +280,30 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		} else if (event.getSource().equals(comboBoxToYears) || event.getSource().equals(comboBoxToMonths)) {
 			updateDaysComboBox(comboBoxToDays, comboBoxToMonths.getSelectedIndex(), comboBoxToYears.getSelectedIndex());
 		} else if (event.getSource().equals(buttonQuery)) {
-			databaseQuery = new DatabaseQuery();
-			databaseQuery.setExpirementName(comboBoxSimulationName.getSelectedItem().toString());
-			databaseQuery.setCoordinateLatitudeOne(getIntValue(inputCoordinateOneLatitude));
-			databaseQuery.setCoordinateLatitudeTwo(getIntValue(inputCoordinateTwoLatitude));
-			databaseQuery.setCoordinateLongitudeOne(getIntValue(inputCoordinateOneLongitude));
-			databaseQuery.setCoordinateLongitudeTwo(getIntValue(inputCoordinateTwoLongitude));
-			databaseQuery.setTimeStep(getIntValue(inputTimeStep));
-			databaseQuery.setStartDateTime(getDateFromComboBox(comboBoxFromYears, comboBoxFromMonths, comboBoxFromDays, comboBoxFromHours, comboBoxFromMinutes));
-			databaseQuery.setEndDateTime(getDateFromComboBox(comboBoxToYears, comboBoxToMonths, comboBoxToDays, comboBoxToHours, comboBoxToMinutes));
-			databaseQuery.setAxialTilt(Double.parseDouble(inputAxialTilt.getText()));
-			databaseQuery.setOrbitalEccentricity(Double.parseDouble(inputOrbitalEccentricity.getText()));
-			databaseQuery.setGridSpacing(getIntValue(inputGridSpacing));
-			databaseQuery.setDataPrecision(params.getDataPrecision());
-			databaseQuery.setGeoPrecision(params.getGeographicPrecision());
-			databaseQuery.setTemporalPrecision(params.getTemporalPrecision());
+			final DatabaseQueryBuilder builder = new DatabaseQueryBuilder()
+					.experimentName(comboBoxSimulationName.getSelectedItem() != null ? comboBoxSimulationName.getSelectedItem().toString() : "")
+					.coordinateLatitudeOne(getIntValue(inputCoordinateOneLatitude))
+					.coordinateLatitudeTwo(getIntValue(inputCoordinateTwoLatitude))
+					.coordinateLongitudeOne(getIntValue(inputCoordinateOneLongitude))
+					.coordinateLongitudeTwo(getIntValue(inputCoordinateTwoLongitude))
+					.timeStep(getIntValue(inputTimeStep))
+					.startDateTime(getDateFromComboBox(comboBoxFromYears, comboBoxFromMonths, comboBoxFromDays, comboBoxFromHours, comboBoxFromMinutes))
+					.endDateTime(getDateFromComboBox(comboBoxToYears, comboBoxToMonths, comboBoxToDays, comboBoxToHours, comboBoxToMinutes))
+					.axialTilt(Double.parseDouble(inputAxialTilt.getText()))
+					.orbitalEccentricity(Double.parseDouble(inputOrbitalEccentricity.getText()))
+					.gridSpacing(getIntValue(inputGridSpacing))
+					.dataPrecision(params.getDataPrecision())
+					.geoPrecision(params.getGeographicPrecision())
+					.temporalPrecision(params.getTemporalPrecision());
 
-			resultsPanel.updateExpirement(dao.get(databaseQuery), databaseQuery);
+			resultsPanel.updateExpirement(dao.get(builder.build()), builder.build());
 		}
 	}
 
 	private Date getDateFromComboBox(final JComboBox comboBoxYears, final JComboBox comboBoxMonths, final JComboBox comboBoxDays, final JComboBox comboBoxHours, final JComboBox comboBoxMinutes) {
 		final Calendar instance = Calendar.getInstance();
-		instance.set(getIntValue(comboBoxFromYears), getIntValue(comboBoxFromMonths) - 1, getIntValue(comboBoxFromDays), getIntValue(comboBoxFromHours), getIntValue(comboBoxFromMinutes), 0);
+		instance.set(getIntValue(comboBoxYears), getIntValue(comboBoxMonths) - 1, getIntValue(comboBoxDays), getIntValue(comboBoxHours), getIntValue(comboBoxMinutes), 0);
+		instance.set(Calendar.MILLISECOND, 0);
 		return instance.getTime();
 	}
 }

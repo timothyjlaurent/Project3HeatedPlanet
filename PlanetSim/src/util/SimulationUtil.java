@@ -48,7 +48,13 @@ public class SimulationUtil {
 		double sum = 0;
 		for (final GridPoint gridPoint : gridPoints) {
 			stats.setMin(min(stats.getMin(), gridPoint.getTemperature()));
+			if (stats.getMin() == gridPoint.getTemperature()) {
+				stats.setMinDate(gridPoint.getDateTime());
+			}
 			stats.setMax(Math.max(stats.getMax(), gridPoint.getTemperature()));
+			if (stats.getMax() == gridPoint.getTemperature()) {
+				stats.setMaxDate(gridPoint.getDateTime());
+			}
 			sum += gridPoint.getTemperature();
 		}
 		stats.setMean(sum / gridPoints.size());
