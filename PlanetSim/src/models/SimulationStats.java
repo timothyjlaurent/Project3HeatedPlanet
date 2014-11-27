@@ -1,8 +1,12 @@
 package models;
 
+import java.util.Date;
+
 public class SimulationStats {
 	private double min = Double.POSITIVE_INFINITY;
+	private Date minDate;
 	private double max = Double.NEGATIVE_INFINITY;
+	private Date maxDate;
 	private double sum = 0;
 	private double mean;
 	private double standardDeviation;
@@ -70,8 +74,24 @@ public class SimulationStats {
 		return sunDist;
 	}
 
-	public void setSunDist(double sunDist) {
+	public void setSunDist(final double sunDist) {
 		this.sunDist = sunDist;
+	}
+
+	public Date getMinDate() {
+		return minDate;
+	}
+
+	public void setMinDate(final Date minDate) {
+		this.minDate = minDate;
+	}
+
+	public Date getMaxDate() {
+		return maxDate;
+	}
+
+	public void setMaxDate(final Date maxDate) {
+		this.maxDate = maxDate;
 	}
 
 }
