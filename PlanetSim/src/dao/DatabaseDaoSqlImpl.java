@@ -81,6 +81,8 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 
 	@Override
 	public void saveOrUpdate(final Experiment experiment) {
+		// TODO make this threaded
+
 		session = sessionFactory.openSession();
 		final Transaction tx = session.beginTransaction();
 		System.out.println("Saving Experiment");

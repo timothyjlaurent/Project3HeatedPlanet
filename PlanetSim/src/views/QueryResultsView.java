@@ -29,6 +29,7 @@ import models.DatabaseQuery;
 import models.Experiment;
 import models.GridPoint;
 import models.SimulationStats;
+import util.Interpolater;
 import util.SimulationUtil;
 
 public class QueryResultsView extends JPanel {
@@ -56,9 +57,13 @@ public class QueryResultsView extends JPanel {
 	}
 
 	public void updateExpirement(final List<Experiment> experiment, final DatabaseQuery query) {
+		// TODO interpolate;
 		if (!experiment.isEmpty()) {
-			final Map<Date, Set<GridPoint>> map = SimulationUtil.convertSetToMap(experiment.get(0).getGridPoints());
 
+			final Map<Date, Set<GridPoint>> map = Interpolater.interpolate(experiment.get(0), query);
+
+			// Map<Date, Set<GridPoint>> map =
+			// SimulationUtil.convertSetToMap(experiment.get(0).getGridPoints());
 			final long diffInMilles = abs(query.getEndDateTime().getTime() - query.getStartDateTime().getTime());
 			final long diffInMinutes = TimeUnit.MINUTES.convert(diffInMilles, TimeUnit.MILLISECONDS);
 			final long numOfTimeSteps = diffInMinutes / query.getTimeStep();
