@@ -1,0 +1,58 @@
+Data Precision
+Precision,Geographic Precision,Temporal Precision,Axial Tilt,Orbital Eccentricity,Grid Spacing,Simulation Time Step,Simulation Length,Simulation Rate,Memory,Time
+0,100,100,23.44,0.0167,15,1440,12,0,10711976,954,
+2,100,100,23.44,0.0167,15,1440,12,0,20946968,581,
+4,100,100,23.44,0.0167,15,1440,12,0,-53939840,572,
+6,100,100,23.44,0.0167,15,1440,12,0,101878496,741,
+8,100,100,23.44,0.0167,15,1440,12,0,60298512,636,
+Geographic Precision
+Precision,Geographic Precision,Temporal Precision,Axial Tilt,Orbital Eccentricity,Grid Spacing,Simulation Time Step,Simulation Length,Simulation Rate,Memory,Time
+5,10,100,23.44,0.0167,15,1440,12,0,26413024,596,
+5,30,100,23.44,0.0167,15,1440,12,0,109795592,530,
+5,50,100,23.44,0.0167,15,1440,12,0,81897968,487,
+5,70,100,23.44,0.0167,15,1440,12,0,51110584,533,
+5,90,100,23.44,0.0167,15,1440,12,0,27135080,502,
+Temporal Precision
+Precision,Geographic Precision,Temporal Precision,Axial Tilt,Orbital Eccentricity,Grid Spacing,Simulation Time Step,Simulation Length,Simulation Rate,Memory,Time
+5,100,10,23.44,0.0167,15,1440,12,0,7249528,516,
+5,100,30,23.44,0.0167,15,1440,12,0,91983032,525,
+5,100,50,23.44,0.0167,15,1440,12,0,82526640,486,
+5,100,70,23.44,0.0167,15,1440,12,0,73339784,483,
+5,100,90,23.44,0.0167,15,1440,12,0,66545600,479,
+Axial Tilt
+Precision,Geographic Precision,Temporal Precision,Axial Tilt,Orbital Eccentricity,Grid Spacing,Simulation Time Step,Simulation Length,Simulation Rate,Memory,Time
+5,100,100,-180.0,0.0167,15,1440,12,0,65539224,492,
+5,100,100,-72.0,0.0167,15,1440,12,0,66153824,499,
+5,100,100,0.0,0.0167,15,1440,12,0,73044488,462,
+5,100,100,72.0,0.0167,15,1440,12,0,8488864,490,
+5,100,100,180.0,0.0167,15,1440,12,0,20117960,489,
+Orbital Eccentricty
+Precision,Geographic Precision,Temporal Precision,Axial Tilt,Orbital Eccentricity,Grid Spacing,Simulation Time Step,Simulation Length,Simulation Rate,Memory,Time
+5,100,100,23.44,0.01,15,1440,12,0,39014928,495,
+5,100,100,23.44,0.03,15,1440,12,0,59442808,488,
+5,100,100,23.44,0.05,15,1440,12,0,23693880,503,
+5,100,100,23.44,0.07,15,1440,12,0,50473280,522,
+Grid Spacing
+Precision,Geographic Precision,Temporal Precision,Axial Tilt,Orbital Eccentricity,Grid Spacing,Simulation Time Step,Simulation Length,Simulation Rate,Memory,Time
+5,100,100,23.44,0.0167,10,1440,12,0,37795744,1376,
+5,100,100,23.44,0.0167,15,1440,12,0,24563744,486,
+5,100,100,23.44,0.0167,30,1440,12,0,43920200,110,
+5,100,100,23.44,0.0167,90,1440,12,0,46506064,16,
+Simulation Time
+Precision,Geographic Precision,Temporal Precision,Axial Tilt,Orbital Eccentricity,Grid Spacing,Simulation Time Step,Simulation Length,Simulation Rate,Memory,Time
+5,100,100,23.44,0.0167,15,1440,12,0,7549920,488,
+5,100,100,23.44,0.0167,15,2880,12,0,8828960,237,
+5,100,100,23.44,0.0167,15,4320,12,0,36639808,155,
+5,100,100,23.44,0.0167,15,5760,12,0,20597776,120,
+5,100,100,23.44,0.0167,15,7200,12,0,37697464,95,
+5,100,100,23.44,0.0167,15,8640,12,0,15437880,84,
+5,100,100,23.44,0.0167,15,10080,12,0,26765224,71,
+5,100,100,23.44,0.0167,15,11520,12,0,2676456,61,
+5,100,100,23.44,0.0167,15,12960,12,0,11558584,52,
+Simulation Length
+Precision,Geographic Precision,Temporal Precision,Axial Tilt,Orbital Eccentricity,Grid Spacing,Simulation Time Step,Simulation Length,Simulation Rate,Memory,Time
+5,100,100,23.44,0.0167,15,1440,100,0,27394760,4157,
+5,100,100,23.44,0.0167,15,1440,300,0,38954800,12243,
+5,100,100,23.44,0.0167,15,1440,500,0,19606072,22384,
+5,100,100,23.44,0.0167,15,1440,700,0,12430136,30597,
+5,100,100,23.44,0.0167,15,1440,900,0,10847680,36337,
