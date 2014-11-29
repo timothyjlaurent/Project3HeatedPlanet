@@ -37,6 +37,13 @@ public class Interpolator {
 		return map;
 	}
 
+	/**
+	 * Transforms an input geographically sparse
+	 * 
+	 * @param map
+	 * @param experiment
+	 * @return
+	 */
 	private static Map<Date, Set<GridPoint>> interpolateGeographic(final Map<Date, Set<GridPoint>> map, final Experiment experiment) {
 
 		final Map<Date, Set<GridPoint>> returnMap = (Map<Date, Set<GridPoint>>) ((HashMap) map).clone();
@@ -81,7 +88,7 @@ public class Interpolator {
 				return point.getTemperature();
 			}
 			final double lat1 = (point.getTopLatitude() - spacing) / 2;
-			final double long1 = (point.getLeftLongitude() - spacing) / 2;
+			final double long1 = (point.getLeftLongitude() + spacing) / 2;
 			final double dist = SimulationUtil.calcDistanceBetweenLatLongPairs(latitude, longitude, lat1, long1);
 			final double weight = 1 / Math.pow(dist, 1.3);
 			sumOfWeights += weight;
