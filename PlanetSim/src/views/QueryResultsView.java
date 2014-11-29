@@ -29,7 +29,7 @@ import models.DatabaseQuery;
 import models.Experiment;
 import models.GridPoint;
 import models.SimulationStats;
-import util.Interpolater;
+import util.Interpolator;
 import util.SimulationUtil;
 
 public class QueryResultsView extends JPanel {
@@ -49,18 +49,18 @@ public class QueryResultsView extends JPanel {
 		dataTable.setRowHeight(dataTable.getRowHeight() * 2);
 		dataTable.setAlignmentX(Component.LEFT_ALIGNMENT);
 		dataTable.setAlignmentY(Component.TOP_ALIGNMENT);
-		dataTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		dataTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
 		final JScrollPane scollablePane = new JScrollPane(dataTable);
 		scollablePane.setPreferredSize(new Dimension(985, 425));
 		add(scollablePane);
 	}
 
-	public void updateExpirement(final List<Experiment> experiment, final DatabaseQuery query) {
+	public void updateExpirement(final List<Experiment> experiment, final DatabaseQuery query) throws CloneNotSupportedException {
 		// TODO interpolate;
 		if (!experiment.isEmpty()) {
 
-			final Map<Date, Set<GridPoint>> map = Interpolater.interpolate(experiment.get(0), query);
+			final Map<Date, Set<GridPoint>> map = Interpolator.interpolate(experiment.get(0), query);
 
 			// Map<Date, Set<GridPoint>> map =
 			// SimulationUtil.convertSetToMap(experiment.get(0).getGridPoints());

@@ -128,4 +128,22 @@ public class SimulationUtil {
 		return abs(cos(toRadians(gridPoint.getTopLatitude())) * verticalSideLength);
 	}
 
+	static double calcDistanceBetweenLatLongPairs(double lat1, double long1, double lat2, double long2) {
+		final double radius = 6371;
+		lat1 = Math.toRadians(lat1);
+		lat2 = Math.toRadians(lat2);
+		long1 = Math.toRadians(long1);
+		long2 = Math.toRadians(long2);
+		final double deltaLat = (lat2 - lat1);
+		final double deltaLong = long2 - long1;
+	
+		final double a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+				Math.cos(lat1) * Math.cos(lat2) *
+				Math.sin(deltaLong / 2) * Math.sin(deltaLong / 2);
+		final double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	
+		return radius * c;
+	
+	}
+
 }

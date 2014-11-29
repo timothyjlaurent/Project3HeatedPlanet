@@ -296,7 +296,12 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 					.geoPrecision(params.getGeographicPrecision())
 					.temporalPrecision(params.getTemporalPrecision());
 
-			resultsPanel.updateExpirement(dao.get(builder.build()), builder.build());
+			try {
+				resultsPanel.updateExpirement(dao.get(builder.build()), builder.build());
+			} catch (final CloneNotSupportedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

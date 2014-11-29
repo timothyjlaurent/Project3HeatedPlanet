@@ -111,8 +111,14 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 				final int tempPrecision = experiment.getCommandLineParam().getTemporalPrecision();
 				final int numOfDatesToKeep = (int) (dates.size() * tempPrecision / 100.00);
 
-				for (int i = 1; i < dates.size(); i++) {
-					if (i % numOfDatesToKeep == 0) {
+				final ArrayList<Integer> dateIndexesToKeep = new ArrayList<Integer>();
+
+				for (int i = 0; i < numOfDatesToKeep; i += 1) {
+					dateIndexesToKeep.add((int) Math.round((double) i / numOfDatesToKeep * dates.size()));
+				}
+
+				for (int i = 0; i < dates.size(); i++) {
+					if (!dateIndexesToKeep.contains(i)) {
 						map.remove(dates.get(i));
 					}
 				}
@@ -127,10 +133,22 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 
 					final int numOfGeoToKeep = list.size() * geoPrecision / 100;
 
+					final ArrayList<Integer> geoIndexesToKeep = new ArrayList<Integer>();
+
+					for (int i = 0; i < numOfGeoToKeep; i += 1) {
+
+						geoIndexesToKeep.add((int) Math.round((double) i / numOfGeoToKeep * list.size()));
+
+					}
+
 					int pos = 0;
 					for (final Iterator<GridPoint> iterator = list.iterator(); iterator.hasNext();) {
 						final GridPoint gridPoint = iterator.next();
-						if (pos != 0 && pos % numOfGeoToKeep == 0) {
+						// if (pos != 0 && pos % numOfGeoToKeep == 0) {
+						// iterator.remove();
+						// } else {
+
+						if (!geoIndexesToKeep.contains(pos)) {
 							iterator.remove();
 						} else {
 							final double temp = gridPoint.getTemperature();
@@ -140,6 +158,7 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 							gridPoint.setTemperature(value.doubleValue());
 							pointsToSave.add(gridPoint);
 						}
+
 						pos++;
 					}
 				}
