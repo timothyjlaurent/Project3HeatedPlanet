@@ -95,44 +95,63 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 		final int tempPrecision = experiment.getCommandLineParam().getTemporalPrecision();
 		final int numOfDatesToKeep = (int) (dates.size() * tempPrecision / 100.00);
 
-		for (int i = 1; i < dates.size(); i++) {
-			if (i % numOfDatesToKeep == 0) {
-				map.remove(dates.get(i));
-			}
-		}
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
 
-		final int geoPrecision = experiment.getCommandLineParam().getGeographicPrecision();
+				session = sessionFactory.openSession();
+				final Transaction tx = session.beginTransaction();
+				System.out.println("Saving Experiment");
+				final Map<Date, Set<GridPoint>> map = convertSetToMap(experiment.getGridPoints());
 
-		final List<GridPoint> pointsToSave = new ArrayList<GridPoint>();
+				// Remove dates due to precision
+				final List<Date> dates = new ArrayList<Date>(map.keySet());
+				sort(dates);
 
-		for (final Entry<Date, Set<GridPoint>> gridPointEntry : map.entrySet()) {
-			final List<GridPoint> list = new ArrayList<GridPoint>(gridPointEntry.getValue());
-			sort(list);
+				final int tempPrecision = experiment.getCommandLineParam().getTemporalPrecision();
+				final int numOfDatesToKeep = (int) (dates.size() * tempPrecision / 100.00);
 
-			final int numOfGeoToKeep = list.size() * geoPrecision / 100;
-
-			int pos = 0;
-			for (final Iterator<GridPoint> iterator = list.iterator(); iterator.hasNext();) {
-				final GridPoint gridPoint = iterator.next();
-				if (pos != 0 && pos % numOfGeoToKeep == 0) {
-					iterator.remove();
-				} else {
-					final double temp = gridPoint.getTemperature();
-					final BigDecimal value = new BigDecimal(temp);
-					value.setScale(experiment.getCommandLineParam().getDataPrecision(), RoundingMode.HALF_UP);
-					// TODO Look into
-					gridPoint.setTemperature(value.doubleValue());
-					pointsToSave.add(gridPoint);
+				for (int i = 1; i < dates.size(); i++) {
+					if (i % numOfDatesToKeep == 0) {
+						map.remove(dates.get(i));
+					}
 				}
-				pos++;
+
+				final int geoPrecision = experiment.getCommandLineParam().getGeographicPrecision();
+
+				final List<GridPoint> pointsToSave = new ArrayList<GridPoint>();
+
+				for (final Entry<Date, Set<GridPoint>> gridPointEntry : map.entrySet()) {
+					final List<GridPoint> list = new ArrayList<GridPoint>(gridPointEntry.getValue());
+					sort(list);
+
+					final int numOfGeoToKeep = list.size() * geoPrecision / 100;
+
+					int pos = 0;
+					for (final Iterator<GridPoint> iterator = list.iterator(); iterator.hasNext();) {
+						final GridPoint gridPoint = iterator.next();
+						if (pos != 0 && pos % numOfGeoToKeep == 0) {
+							iterator.remove();
+						} else {
+							final double temp = gridPoint.getTemperature();
+							final BigDecimal value = new BigDecimal(temp);
+							value.setScale(experiment.getCommandLineParam().getDataPrecision(), RoundingMode.HALF_UP);
+							// TODO Look into
+							gridPoint.setTemperature(value.doubleValue());
+							pointsToSave.add(gridPoint);
+						}
+						pos++;
+					}
+				}
+				experiment.setGridPoints(new HashSet<GridPoint>(pointsToSave));
+				System.out.println("Number of Points Saved: " + pointsToSave.size());
+				session.saveOrUpdate(experiment);
+				tx.commit();
+				session.flush();
+				session.close();
 			}
-		}
-		experiment.setGridPoints(new HashSet<GridPoint>(pointsToSave));
-		System.out.println("Number of Points Saved: " + pointsToSave.size());
-		session.saveOrUpdate(experiment);
-		tx.commit();
-		session.flush();
-		session.close();
+
+		}).start();
 	}
 
 	@Override

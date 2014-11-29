@@ -16,13 +16,13 @@ public class CommandLineController {
 				if (args[i].matches("^-\\w$")) {
 					switch (args[i].charAt(1)) {
 					case 'p':
-						commandLineParameters.setDataPrecision(validateInput(args[i++], 0, Integer.MAX_VALUE));
+						commandLineParameters.setDataPrecision(validateInput(args[++i], 0, Integer.MAX_VALUE));
 						break;
 					case 'g':
-						commandLineParameters.setGeographicPrecision(validateInput(args[i++], 0, 100));
+						commandLineParameters.setGeographicPrecision(validateInput(args[++i], 0, 100));
 						break;
 					case 't':
-						commandLineParameters.setTemporalPrecision(validateInput(args[i++], 0, 100));
+						commandLineParameters.setTemporalPrecision(validateInput(args[++i], 0, 100));
 						break;
 					}
 				}
