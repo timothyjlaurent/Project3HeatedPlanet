@@ -186,4 +186,15 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 		return list.isEmpty() ? new ArrayList<String>() : list;
 	}
 
+	@Override
+	public List<Experiment> getAllExperiments() {
+		session = sessionFactory.openSession();
+		session.beginTransaction();
+		final Criteria criteria = session.createCriteria(Experiment.class);
+		@SuppressWarnings("unchecked")
+		final List<Experiment> list = criteria.list();
+		session.close();
+		return list.isEmpty() ? new ArrayList<Experiment>() : list;
+	}
+
 }

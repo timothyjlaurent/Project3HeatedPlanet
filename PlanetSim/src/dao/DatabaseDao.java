@@ -26,4 +26,6 @@ public interface DatabaseDao {
 
 	public List<String> getExperimentNames();
 
+	public List<Experiment> getAllExperiments();
+
 }

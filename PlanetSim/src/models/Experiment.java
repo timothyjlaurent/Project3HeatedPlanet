@@ -23,7 +23,7 @@ public class Experiment {
 	@Column(name = "EXPERIMENT_ID")
 	private int experimentId = -1;
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "experiment_id")
 	private Set<GridPoint> gridPoints = new HashSet<GridPoint>();
 
@@ -88,6 +88,10 @@ public class Experiment {
 	@Override
 	public String toString() {
 		return "Experiment [experimentId=" + experimentId + " : " + gridPoints + "]";
+	}
+
+	public String toStringShort() {
+		return "Experiment: id:" + experimentId + " : ExperimentName " + simulationSettings.getExperimentName();
 	}
 
 }

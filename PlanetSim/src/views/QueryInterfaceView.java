@@ -28,6 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import models.CommandLineParam;
+import models.Experiment;
 import util.DatabaseQueryBuilder;
 import constants.SimulationConstants;
 import dao.DatabaseDao;
@@ -61,16 +62,19 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 	private JFormattedTextField inputOrbitalEccentricity;
 	private JFormattedTextField inputTimeStep;
 
+	private List<Experiment> experiments = new ArrayList<Experiment>();
+
 	private JButton buttonQuery;
 
 	private final DatabaseDao dao;
 	private final QueryResultsView resultsPanel = new QueryResultsView();
 	private final CommandLineParam params;
+	private JComboBox comboBoxSimulationId;
 
 	public QueryInterfaceView(final CommandLineParam params, final DatabaseDao dao) {
 		this.dao = dao;
 		this.params = params;
-
+		experiments = dao.getAllExperiments();
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		add(resultsPanel);
 		add(buildQuerySettingsAndInfoPanel());
@@ -110,9 +114,31 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		valueConstraints = buildConstraints(GridBagConstraints.CENTER, 1, new Insets(10, 10, 0, 0));
 		simulationPanel.setBorder(BorderFactory.createTitledBorder("Simulation Factors"));
 
+		simulationPanel.add(new JLabel("Simulation Id:"), labelConstraints);
+		//
+		final List<String> experimentList = new ArrayList();
+		for (final Experiment exp : experiments) {
+			experimentList.add(exp.toStringShort());
+		}
+		// final SessionFactory sessionFactory = new Sess;
+		// Session session = sessionFactory.openSession();
+
+		// comboBoxSimulationId = new JComboBox(new
+		// DefaultComboBoxModel(experiments.toArray()));
+		comboBoxSimulationId = new JComboBox(experimentList.toArray());
+		// comboBoxSimulationId.addItemListener(new ItemListener() {
+		//
+		// @Override
+		// public void itemStateChanged(final ItemEvent e) {
+		// dao.get(new DataBaseQuery)
+		// }
+		//
+		// });
+		simulationPanel.add(comboBoxSimulationId, valueConstraints);
 		// Simulation Name
 		simulationPanel.add(new JLabel("Simulation Name:"), labelConstraints);
 		comboBoxSimulationName = new JComboBox(new DefaultComboBoxModel(dao.getExperimentNames().toArray()));
+
 		simulationPanel.add(comboBoxSimulationName, valueConstraints);
 
 		final JLabel labelAxialTilt = new JLabel("Axial Tilt:");
