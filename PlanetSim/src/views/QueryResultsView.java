@@ -63,8 +63,8 @@ public class QueryResultsView extends JPanel {
 			final long diffInMinutes = TimeUnit.MINUTES.convert(diffInMilles, TimeUnit.MILLISECONDS);
 			final long numOfTimeSteps = diffInMinutes / query.getTimeStep();
 
-			final long numOfLatitudeSpaces = abs(query.getCoordinateLatitudeTwo() - query.getCoordinateLatitudeOne()) / query.getGridSpacing();
-			final long numOfLongitudeSpaces = abs(query.getCoordinateLongitudeTwo() - query.getCoordinateLongitudeOne()) / query.getGridSpacing();
+			final long numOfLatitudeSpaces = (long) Math.ceil(abs(query.getCoordinateLatitudeTwo() - query.getCoordinateLatitudeOne()) / (double) query.getGridSpacing());
+			final long numOfLongitudeSpaces = (long) Math.ceil(abs(query.getCoordinateLongitudeTwo() - query.getCoordinateLongitudeOne()) / query.getGridSpacing());
 
 			final Object[][] experimentValues = new Object[(int) numOfTimeSteps + 1][(int) (numOfLatitudeSpaces * numOfLongitudeSpaces) + 1];
 			final Object[] experimentColumnHeaders = new Object[(int) (numOfLatitudeSpaces * numOfLongitudeSpaces) + 1];
