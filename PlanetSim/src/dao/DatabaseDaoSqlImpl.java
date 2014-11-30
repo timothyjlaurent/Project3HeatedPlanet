@@ -67,6 +67,7 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 
 	private Criteria createCriteria(final Session curSession, final DatabaseQuery query) {
 		final Criteria cr = curSession.createCriteria(Experiment.class);
+		cr.add(eq("experimentId", query.getExperimentId()));
 		cr.add(eq("commandLineParam.geographicPrecision", query.getGeoPrecision()));
 		cr.add(eq("commandLineParam.temporalPrecision", query.getTemporalPrecision()));
 		cr.add(eq("commandLineParam.dataPrecision", query.getDataPrecision()));

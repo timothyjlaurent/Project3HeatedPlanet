@@ -17,6 +17,7 @@ public class DatabaseQuery {
 	private double axialTilt;
 	private int gridSpacing;
 	private int timeStep;
+	private int experimentId;
 
 	public String getExpirementName() {
 		return expirementName;
@@ -134,6 +135,14 @@ public class DatabaseQuery {
 	public String toString() {
 		return "DatabaseQuery [expirementName=" + expirementName + ", coordinateLatitudeOne=" + coordinateLatitudeOne + ", coordinateLatitudeTwo=" + coordinateLatitudeTwo + ", coordinateLongitudeOne=" + coordinateLongitudeOne + ", coordinateLongitudeTwo=" + coordinateLongitudeTwo + ", startDateTime=" + startDateTime + ", endDateTime=" + endDateTime + ", geoPrecision=" + geoPrecision + ", temporalPrecision=" + temporalPrecision + ", dataPrecision=" + dataPrecision + ", orbitalEccentricity="
 				+ orbitalEccentricity + ", axialTilt=" + axialTilt + ", gridSpacing=" + gridSpacing + ", timeStep=" + timeStep + "]";
+	}
+
+	public void setExperimentId(final int id) {
+		experimentId = id;
+	}
+
+	public int getExperimentId() {
+		return experimentId;
 	}
 
 }

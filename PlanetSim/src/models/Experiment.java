@@ -85,12 +85,13 @@ public class Experiment {
 		this.commandLineParam = commandLineParam;
 	}
 
+	// @Override
+	// public String toString() {
+	// return "Experiment [experimentId=" + experimentId + " : " + gridPoints +
+	// "]";
+	// }
 	@Override
 	public String toString() {
-		return "Experiment [experimentId=" + experimentId + " : " + gridPoints + "]";
-	}
-
-	public String toStringShort() {
 		return "Experiment: id:" + experimentId + " : ExperimentName " + simulationSettings.getExperimentName();
 	}
 

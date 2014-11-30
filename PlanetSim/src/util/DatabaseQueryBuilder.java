@@ -91,6 +91,11 @@ public class DatabaseQueryBuilder {
 		return this;
 	}
 
+	public DatabaseQueryBuilder experimentId(final int id) {
+		query.setExperimentId(id);
+		return this;
+	}
+
 	public DatabaseQuery build() {
 		return query;
 	}
