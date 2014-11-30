@@ -103,11 +103,6 @@ public class Interpolator {
 	 */
 	private static Map<Date, Set<GridPoint>> interpolateTemporal(final Map<Date, Set<GridPoint>> map, final Experiment experiment, final DatabaseQuery query) throws CloneNotSupportedException {
 
-		final long queryStartTime = query.getStartDateTime().getTime();
-		final long queryEndTime = query.getEndDateTime().getTime();
-
-		final long timeStep = experiment.getSimulationSettings().getTimeStep() * 60 * 1000;
-
 		final ArrayList<Date> storedTimePoints = new ArrayList<Date>(map.keySet());
 		// Sorted list of datapoint dates
 		Collections.sort(storedTimePoints);
@@ -115,10 +110,14 @@ public class Interpolator {
 		GridPoint[][] gridPrev = null;
 		GridPoint[][] gridNext = null;
 
+		final ArrayList<Long> outTimePoints = generateOutTimes(query, experiment);
+
 		final Set<GridPoint> outSet = new HashSet<GridPoint>();
 
 		// iterate through the timepoints points
+
 		for (int i = 0; i < storedTimePoints.size(); i += 1) {
+
 			if (i != storedTimePoints.size() - 1) {
 				// get new grids
 				gridPrev = SimulationUtil.convertSetToGrid(map.get(storedTimePoints.get(i)), experiment.getSimulationSettings().getGridSpacing());
@@ -126,32 +125,29 @@ public class Interpolator {
 			}
 			for (int j = 0; j < gridPrev.length; j += 1) {
 				for (int k = 0; k < gridPrev[j].length; k += 1) {
-
-					final GridPoint point1 = gridPrev[j][k];
-
-					if (point1 != null) {
-
-						// System.err.println( 'valid Point' );
+					for (int l = 0; l < outTimePoints.size(); l += 1) { // the
+																		// timepoints
+																		// we
+																		// need
+																		// to
+																		// output
+						final long curTime = outTimePoints.get(l);
+						final GridPoint point1 = gridPrev[j][k];
 						final GridPoint point2 = gridNext[j][k];
 
-						final long indexDate = storedTimePoints.get(i).getTime();
+						if (point1 != null) {
+							final long point1Time = point1.getDateTime().getTime();
+							final long point2Time = point2.getDateTime().getTime();
+							// System.err.println( 'valid Point' );
+							if (i != 0 && curTime < point1Time) {
+								// do nothing
 
-						outSet.add(point1.clone());
-
-						if (i == 0) {
-							// work backward
-							for (long l = indexDate - timeStep; l >= queryStartTime; l -= timeStep) {
-								outSet.add(createTemporalInterpolatedGridPoint(point1, point2, l));
-							}
-						}
-
-						if (i == storedTimePoints.size() - 1) {
-							for (long l = indexDate + timeStep; l < queryEndTime; l += timeStep) {
-								outSet.add(createTemporalInterpolatedGridPoint(point1, point2, l));
-							}
-						} else {
-							for (long l = indexDate + timeStep; l < storedTimePoints.get(i + 1).getTime(); l += timeStep) {
-								outSet.add(createTemporalInterpolatedGridPoint(point1, point2, l));
+							} else if (curTime > point2Time && i != storedTimePoints.size() - 1) {
+								// do nothing
+							} else {
+								final GridPoint pointToAdd = createTemporalInterpolatedGridPoint(point1,
+										point2, curTime);
+								outSet.add(pointToAdd);
 							}
 						}
 					}
@@ -163,11 +159,33 @@ public class Interpolator {
 		return SimulationUtil.convertSetToMap(outSet);
 	}
 
+	public static ArrayList<Long> generateOutTimes(final DatabaseQuery query, final Experiment experiment) {
+
+		final ArrayList<Long> outList = new ArrayList<Long>();
+		final long queryStartTime = query.getStartDateTime().getTime();
+		final long queryEndTime = query.getEndDateTime().getTime();
+		final long timeStep = experiment.getSimulationSettings().getTimeStep() * 60 * 1000;
+
+		long curTime = experiment.getGridPoints().iterator().next().getDateTime().getTime();
+
+		if (curTime < queryStartTime) {
+			curTime = (long) (curTime + Math.ceil((queryStartTime - curTime) / (timeStep)) * timeStep);
+		} else if (curTime > queryStartTime) {
+			curTime = (long) (curTime - Math.floor(Math.abs(queryStartTime - curTime) / timeStep) * timeStep);
+		}
+
+		// Add the times to the
+		do {
+			outList.add(curTime);
+			curTime += timeStep;
+		} while (curTime <= queryEndTime);
+
+		return outList;
+	}
+
 	private static GridPoint createTemporalInterpolatedGridPoint(final GridPoint point1, final GridPoint point2, final long interpolationTime) throws CloneNotSupportedException {
 
 		final GridPoint outPoint = point1.clone();
-		outPoint.setDateTime(new Date(interpolationTime));
-
 		final double y0 = point1.getTemperature();
 		final double y1 = point2.getTemperature();
 		final double x0 = point1.getDateTime().getTime();
@@ -179,6 +197,7 @@ public class Interpolator {
 
 		final double outTemp = y0 + tempDelta * (x - x0) / timeDelta;
 		outPoint.setTemperature(outTemp);
+		outPoint.setDateTime(new Date(interpolationTime));
 
 		return outPoint;
 	}

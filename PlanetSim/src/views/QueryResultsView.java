@@ -78,10 +78,12 @@ public class QueryResultsView extends JPanel {
 
 			experimentColumnHeaders[0] = "";
 
+			final List<Long> outTimes = Interpolator.generateOutTimes(query, experiment.get(0));
+
 			final Map<Integer, Set<GridPoint>> pointsPerRegion = new HashMap<Integer, Set<GridPoint>>();
 			for (int i = 0; i < experimentValues.length; i++) {
 				final Calendar cal = Calendar.getInstance();
-				cal.setTime(query.getStartDateTime());
+				cal.setTime(new Date(outTimes.get(0)));
 				cal.add(Calendar.MINUTE, i * experiment.get(0).getSimulationSettings().getTimeStep());
 				int pos = 1;
 				final ArrayList<GridPoint> points;

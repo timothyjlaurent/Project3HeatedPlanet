@@ -321,9 +321,11 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 
 	private void updateExperimentSelection() {
 		final Experiment item = (Experiment) comboBoxExperiments.getSelectedItem();
-		labelAxialTiltVal.setText(Double.toString(item.getPhysicalFactors().getAxialTilt()));
-		labelOrbitalEccentricityVal.setText(Double.toString(item.getPhysicalFactors().getOrbitalEccentricity()));
-		labelTimeStepVal.setText(Integer.toString(item.getSimulationSettings().getTimeStep()));
-		labelGridSpacingVal.setText(Integer.toString(item.getSimulationSettings().getGridSpacing()));
+		if (item != null) {
+			labelAxialTiltVal.setText(Double.toString(item.getPhysicalFactors().getAxialTilt()));
+			labelOrbitalEccentricityVal.setText(Double.toString(item.getPhysicalFactors().getOrbitalEccentricity()));
+			labelTimeStepVal.setText(Integer.toString(item.getSimulationSettings().getTimeStep()));
+			labelGridSpacingVal.setText(Integer.toString(item.getSimulationSettings().getGridSpacing()));
+		}
 	}
 }
