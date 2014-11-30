@@ -339,5 +339,6 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		}
 
 		comboBoxSimulationId.setModel(new DefaultComboBoxModel(experimentList.toArray()));
+		comboBoxSimulationName.setModel(new DefaultComboBoxModel(dao.getExperimentNames().toArray()));
 	}
 }

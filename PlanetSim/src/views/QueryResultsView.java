@@ -161,7 +161,9 @@ public class QueryResultsView extends JPanel {
 				dataTable.getColumnModel().getColumn(i).setPreferredWidth(175);
 			}
 		} else {
-			dataTable.setModel(new DefaultTableModel(new Object[0][0], new Object[0]));
+			final Object[] noneFound = { "No Experiments Found" };
+			dataTable.setModel(new DefaultTableModel(new Object[0][0], noneFound));
+			dataTable.getColumnModel().getColumn(0).setPreferredWidth(150);
 		}
 	}
 

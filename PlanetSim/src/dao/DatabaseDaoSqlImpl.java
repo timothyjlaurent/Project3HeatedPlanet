@@ -178,7 +178,7 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 		// Add Projections to not get back the list of grid points
 		final Criteria criteria = session.createCriteria(Experiment.class)
 				.setProjection(projectionList()
-						.add(property("experimentId"))
+						.add(property("experimentId"), "experimentId")
 						.add(property("simulationSettings"), "simulationSettings")
 						.add(property("simulationSettings.experimentName"))
 						.add(property("simulationSettings.gridSpacing"))
