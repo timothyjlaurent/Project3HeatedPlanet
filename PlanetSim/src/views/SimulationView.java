@@ -314,6 +314,7 @@ public class SimulationView extends JPanel implements ActionListener {
 				final List<Experiment> list = dao.get(query);
 				if (list.isEmpty()) {
 					if ("Start".equals(buttonStart.getText())) {
+						minutesTimePassed = 0;
 						simulationStart = System.currentTimeMillis();
 						System.out.println("Simulation Started ");
 						experiment = SimulationController.initializeGridPoints(params, getSimulationSettings(), getPhysicalFactors(), SimulationConstants.DEFAULT_START_DATE);
@@ -367,6 +368,8 @@ public class SimulationView extends JPanel implements ActionListener {
 				if (minutesTimePassed >= experiment.getSimulationSettings().getSimulationLength() * SimulationConstants.MINUTES_IN_YEAR / 12) {
 					dao.saveOrUpdate(experiment);
 					setDefaultButtonsEnabledStatus();
+					enableInputs();
+
 					System.out.println("Simulation Stopped: " + (System.currentTimeMillis() - simulationStart) / 1000 + "seconds");
 					System.out.println("Number of Dates Simulated: " + SimulationUtil.convertSetToMap(newGridPoints).keySet().size());
 					stop();
