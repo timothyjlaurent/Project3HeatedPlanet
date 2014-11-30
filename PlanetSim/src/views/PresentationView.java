@@ -16,7 +16,7 @@ public class PresentationView extends JFrame {
 		final JTabbedPane tabbedPane = new JTabbedPane();
 		tabbedPane.addTab("Simulation", new SimulationView(params, dao));
 
-		final QueryInterfaceView queryInterfaceView = new QueryInterfaceView(params, dao);
+		final QueryInterfaceView queryInterfaceView = new QueryInterfaceView(dao);
 		tabbedPane.addTab("Query", queryInterfaceView);
 
 		tabbedPane.addChangeListener(new ChangeListener() {

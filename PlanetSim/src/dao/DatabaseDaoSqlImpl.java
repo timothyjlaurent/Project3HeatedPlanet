@@ -69,19 +69,6 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 		final Criteria cr = curSession.createCriteria(Experiment.class);
 		final int id = query.getExperimentId();
 		cr.add(eq("experimentId", id));
-		// cr.add(eq("commandLineParam.geographicPrecision",
-		// query.getGeoPrecision()));
-		// cr.add(eq("commandLineParam.temporalPrecision",
-		// query.getTemporalPrecision()));
-		// cr.add(eq("commandLineParam.dataPrecision",
-		// query.getDataPrecision()));
-		// cr.add(eq("simulationSettings.experimentName",
-		// query.getExpirementName()));
-		// cr.add(eq("simulationSettings.gridSpacing", query.getGridSpacing()));
-		// cr.add(eq("simulationSettings.timeStep", query.getTimeStep()));
-		// cr.add(eq("physicalFactors.axialTilt", query.getAxialTilt()));
-		// cr.add(eq("physicalFactors.orbitalEccentricity",
-		// query.getOrbitalEccentricity()));
 		cr.createAlias("gridPoints", "gridPoints");
 		cr.add(between("gridPoints.dateTime", query.getStartDateTime(), query.getEndDateTime()));
 		cr.add(between("gridPoints.topLatitude", query.getCoordinateLatitudeOne(), query.getCoordinateLatitudeTwo()));
@@ -146,7 +133,6 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 							final double temp = gridPoint.getTemperature();
 							final BigDecimal value = new BigDecimal(temp);
 							value.setScale(experiment.getCommandLineParam().getDataPrecision(), RoundingMode.HALF_UP);
-							// TODO Look into
 							gridPoint.setTemperature(value.doubleValue());
 							pointsToSave.add(gridPoint);
 						}

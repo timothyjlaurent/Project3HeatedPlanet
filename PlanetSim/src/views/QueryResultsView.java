@@ -66,8 +66,6 @@ public class QueryResultsView extends JPanel {
 
 			final Map<Date, Set<GridPoint>> map = Interpolator.interpolate(experiment.get(0), query);
 
-			// Map<Date, Set<GridPoint>> map =
-			// SimulationUtil.convertSetToMap(experiment.get(0).getGridPoints());
 			final long diffInMilles = abs(query.getEndDateTime().getTime() - query.getStartDateTime().getTime());
 			final long diffInMinutes = TimeUnit.MINUTES.convert(diffInMilles, TimeUnit.MILLISECONDS);
 			final long numOfTimeSteps = diffInMinutes / experiment.get(0).getSimulationSettings().getTimeStep();
@@ -82,10 +80,9 @@ public class QueryResultsView extends JPanel {
 
 			final Map<Integer, Set<GridPoint>> pointsPerRegion = new HashMap<Integer, Set<GridPoint>>();
 			for (int i = 0; i < experimentValues.length; i++) {
-
 				final Calendar cal = Calendar.getInstance();
 				cal.setTime(query.getStartDateTime());
-				cal.add(Calendar.MINUTE, (i) * query.getTimeStep());
+				cal.add(Calendar.MINUTE, i * experiment.get(0).getSimulationSettings().getTimeStep());
 				int pos = 1;
 				final ArrayList<GridPoint> points;
 				if (map.get(cal.getTime()) != null) {
@@ -101,9 +98,9 @@ public class QueryResultsView extends JPanel {
 						final StringBuilder builder = new StringBuilder();
 						builder.append("<html>");
 						builder.append("<div style=\"text-align: left;\">");
-						builder.append("Lat:" + (min(query.getCoordinateLatitudeOne(), query.getCoordinateLatitudeTwo()) + j * query.getGridSpacing()));
+						builder.append("Lat:" + (min(query.getCoordinateLatitudeOne(), query.getCoordinateLatitudeTwo()) + j * experiment.get(0).getSimulationSettings().getGridSpacing()));
 						builder.append("  |  ");
-						builder.append("Long:" + (min(query.getCoordinateLongitudeOne(), query.getCoordinateLongitudeTwo()) + k * query.getGridSpacing()));
+						builder.append("Long:" + (min(query.getCoordinateLongitudeOne(), query.getCoordinateLongitudeTwo()) + k * experiment.get(0).getSimulationSettings().getGridSpacing()));
 
 						if (!points.isEmpty()) {
 							builder.append("<br/>Min Temp:" + format("%.2f", stats.getMin()));
@@ -126,7 +123,6 @@ public class QueryResultsView extends JPanel {
 								pointsPerRegion.get(i).add(points.get(pos - 1));
 							}
 						} else {
-							// TODO
 							experimentValues[i][pos] = "Need to interpolate";
 						}
 
