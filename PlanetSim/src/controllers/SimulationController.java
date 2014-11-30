@@ -298,7 +298,7 @@ public class SimulationController {
 			final double eastTemp = verticalSideLength / gridPerimeter * getNeigbhorGridPoint(gridPoints, latitude + gridSpacing, longitude).getTemperature();
 			final double westTemp = verticalSideLength / gridPerimeter * getNeigbhorGridPoint(gridPoints, latitude - gridSpacing, longitude).getTemperature();
 			final double northTemp = southSideLength / gridPerimeter * getNeigbhorGridPoint(gridPoints, latitude, longitude - gridSpacing).getTemperature();
-			final double southTemp = northSideLength / gridPerimeter * getNeigbhorGridPoint(gridPoints, latitude, longitude + gridSpacing).getTemperature();
+			final double southTemp = northSideLength / gridPerimeter * getNeigbhorGridPoint(gridPoints, latitude, longitude + gridSpacing >= 180 ? -1 * (longitude + gridSpacing) : longitude + gridSpacing).getTemperature();
 			final double neighborTemp = eastTemp + westTemp + northTemp + southTemp;
 
 			// changed to give double weight to current temp

@@ -326,6 +326,9 @@ public class SimulationView extends JPanel implements ActionListener {
 							}
 						}
 						if (showAnimation) {
+							if (earthPanel != null) {
+								this.remove(earthPanel);
+							}
 							earthPanel = new EarthPanel(getIntValue(inputGridSpacing));
 							earthPanel.updateGrid(experiment.getGridPoints(), SimulationController.getSunLat(), SimulationController.getSunLong());
 							this.add(earthPanel, BorderLayout.CENTER);

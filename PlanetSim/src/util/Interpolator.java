@@ -2,12 +2,10 @@ package util;
 
 import static constants.SimulationConstants.HEIGHT_IN_DEGREES;
 import static constants.SimulationConstants.WIDTH_IN_DEGREES;
-import static java.lang.Math.abs;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -15,16 +13,12 @@ import java.util.Set;
 import models.DatabaseQuery;
 import models.Experiment;
 import models.GridPoint;
-import constants.SimulationConstants;
 
 public class Interpolator {
 
 	public static Map<Date, Set<GridPoint>> interpolate(final Experiment experiment, final DatabaseQuery query) throws CloneNotSupportedException {
 
 		Map<Date, Set<GridPoint>> map = SimulationUtil.convertSetToMap(experiment.getGridPoints());
-
-		final long numOfLatitudeSpaces = abs(query.getCoordinateLatitudeTwo() - query.getCoordinateLatitudeOne()) / experiment.getSimulationSettings().getGridSpacing();
-		final long numOfLongitudeSpaces = abs(query.getCoordinateLongitudeTwo() - query.getCoordinateLongitudeOne()) / experiment.getSimulationSettings().getGridSpacing();
 
 		if (experiment.getCommandLineParam().getTemporalPrecision() < 100) {
 
@@ -47,7 +41,6 @@ public class Interpolator {
 	 */
 	private static Map<Date, Set<GridPoint>> interpolateGeographic(final Map<Date, Set<GridPoint>> map, final Experiment experiment) {
 
-		final Map<Date, Set<GridPoint>> returnMap = (Map<Date, Set<GridPoint>>) ((HashMap) map).clone();
 		final Set<GridPoint> outSet = new HashSet<GridPoint>();
 		for (final Date date : map.keySet()) {
 
@@ -110,10 +103,7 @@ public class Interpolator {
 	 */
 	private static Map<Date, Set<GridPoint>> interpolateTemporal(final Map<Date, Set<GridPoint>> map, final Experiment experiment, final DatabaseQuery query) throws CloneNotSupportedException {
 
-		final long expStartTime = SimulationConstants.DEFAULT_START_DATE.getTimeInMillis();
-
 		final long queryStartTime = query.getStartDateTime().getTime();
-
 		final long queryEndTime = query.getEndDateTime().getTime();
 
 		final long timeStep = experiment.getSimulationSettings().getTimeStep() * 60 * 1000;
@@ -122,12 +112,7 @@ public class Interpolator {
 		// Sorted list of datapoint dates
 		Collections.sort(storedTimePoints);
 
-		final ArrayList<Date> ValidTimePoints = new ArrayList<Date>();
-
-		final Double slope;
-
 		GridPoint[][] gridPrev = null;
-
 		GridPoint[][] gridNext = null;
 
 		final Set<GridPoint> outSet = new HashSet<GridPoint>();
@@ -191,10 +176,8 @@ public class Interpolator {
 
 		final double tempDelta = y1 - y0;
 		final double timeDelta = x1 - x0;
-		final double timeElapsed = x - x0;
 
 		final double outTemp = y0 + tempDelta * (x - x0) / timeDelta;
-
 		outPoint.setTemperature(outTemp);
 
 		return outPoint;

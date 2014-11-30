@@ -29,7 +29,6 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import models.CommandLineParam;
 import models.Experiment;
 import util.DatabaseQueryBuilder;
 import constants.SimulationConstants;
@@ -41,7 +40,8 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 	private GridBagConstraints labelConstraints;
 	private GridBagConstraints valueConstraints;
 
-	private JComboBox comboBoxSimulationName;
+	private List<Experiment> experiments = new ArrayList<Experiment>();
+	private JComboBox comboBoxExperiments;
 
 	private final JComboBox comboBoxFromYears = new JComboBox(getArrayOfIntegers(Calendar.getInstance().get(Calendar.YEAR), true, "0000", 0));
 	private final JComboBox comboBoxFromMonths = new JComboBox(getArrayOfIntegers(12));
@@ -59,23 +59,20 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 	private final JFormattedTextField inputCoordinateOneLongitude = new JFormattedTextField(buildNumberFormatter(-90, 90));;
 	private final JFormattedTextField inputCoordinateTwoLatitude = new JFormattedTextField(buildNumberFormatter(-180, 180));;
 	private final JFormattedTextField inputCoordinateTwoLongitude = new JFormattedTextField(buildNumberFormatter(-90, 90));;
+
 	private JLabel labelGridSpacingVal;
 	private JLabel labelAxialTiltVal;
 	private JLabel labelOrbitalEccentricityVal;
 	private JLabel labelTimeStepVal;
 
-	private List<Experiment> experiments = new ArrayList<Experiment>();
-
 	private JButton buttonQuery;
 
-	private final DatabaseDao dao;
 	private final QueryResultsView resultsPanel = new QueryResultsView();
-	private final CommandLineParam params;
-	private JComboBox comboBoxSimulationId;
 
-	public QueryInterfaceView(final CommandLineParam params, final DatabaseDao dao) {
+	private final DatabaseDao dao;
+
+	public QueryInterfaceView(final DatabaseDao dao) {
 		this.dao = dao;
-		this.params = params;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		add(resultsPanel);
 		add(buildQuerySettingsAndInfoPanel());
@@ -116,42 +113,22 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		valueConstraints = buildConstraints(GridBagConstraints.CENTER, 1, new Insets(10, 10, 0, 0));
 		simulationPanel.setBorder(BorderFactory.createTitledBorder("Simulation Factors"));
 
-		// simulationPanel.add(new JLabel("Simulation Id:"), labelConstraints);
-
-		// comboBoxSimulationId = new JComboBox();
-		// comboBoxSimulationId.addItemListener(new ItemListener() {
-		//
-		// @Override
-		// public void itemStateChanged(final ItemEvent e) {
-		// dao.get(new DataBaseQuery)
-		// }
-		//
-		// });
-		// simulationPanel.add(comboBoxSimulationId, valueConstraints);
-		// Simulation Name
 		simulationPanel.add(new JLabel("Simulation :"), labelConstraints);
-		comboBoxSimulationName = new JComboBox(new DefaultComboBoxModel(dao.getAllExperiments().toArray()));
-		comboBoxSimulationName.addItemListener(new ItemListener() {
+		comboBoxExperiments = new JComboBox(new DefaultComboBoxModel(dao.getAllExperiments().toArray()));
+		comboBoxExperiments.addItemListener(new ItemListener() {
 
 			@Override
 			public void itemStateChanged(final ItemEvent e) {
-				// TODO Auto-generated method stub
-				final Experiment item = (Experiment) comboBoxSimulationName.getSelectedItem();
-				labelAxialTiltVal.setText(Double.toString(item.getPhysicalFactors().getAxialTilt()));
-				labelOrbitalEccentricityVal.setText(Double.toString(item.getPhysicalFactors().getOrbitalEccentricity()));
-				labelTimeStepVal.setText(Integer.toString(item.getSimulationSettings().getTimeStep()));
-				labelGridSpacingVal.setText(Integer.toString(item.getSimulationSettings().getGridSpacing()));
+				updateExperimentSelection();
 			}
 
 		});
 
-		simulationPanel.add(comboBoxSimulationName, valueConstraints);
+		simulationPanel.add(comboBoxExperiments, valueConstraints);
 
 		final JLabel labelAxialTilt = new JLabel("Axial Tilt:");
 		simulationPanel.add(labelAxialTilt, labelConstraints);
 		labelAxialTiltVal = new JLabel();
-		// new JFormattedTextField(buildNumberFormatter(-180.00, 180.00, 2));
-		// labelAxialTiltVal.setColumns(5);
 
 		simulationPanel.add(labelAxialTiltVal, valueConstraints);
 
@@ -159,23 +136,17 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		final JLabel labelOrbitalEccentricity = new JLabel("Orbital Eccentricity:");
 		simulationPanel.add(labelOrbitalEccentricity, labelConstraints);
 		labelOrbitalEccentricityVal = new JLabel();
-		// new JFormattedTextField(buildNumberFormatter(0.00000, 1.00000, 4));
-		// labelOrbitalEccentricityVal.setColumns(5);
 		simulationPanel.add(labelOrbitalEccentricityVal, valueConstraints);
 
 		// Time Step
 		final JLabel labelTimeStep = new JLabel("Time Step:");
 		simulationPanel.add(labelTimeStep, labelConstraints);
 		labelTimeStepVal = new JLabel();
-		// new JFormattedTextField(buildNumberFormatter(1, 525600));
-		// labelTimeStepVal.setColumns(5);
 		simulationPanel.add(labelTimeStepVal, valueConstraints);
 
 		// Grid Spacing
 		simulationPanel.add(new JLabel("Grid Spacing:"), labelConstraints);
 		labelGridSpacingVal = new JLabel();
-		// new JFormattedTextField(buildNumberFormatter(1, 180));
-		// labelGridSpacingVal.setColumns(5);
 		simulationPanel.add(labelGridSpacingVal, valueConstraints);
 
 		setDefaultControlValues();
@@ -318,31 +289,18 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		} else if (event.getSource().equals(comboBoxToYears) || event.getSource().equals(comboBoxToMonths)) {
 			updateDaysComboBox(comboBoxToDays, comboBoxToMonths.getSelectedIndex(), comboBoxToYears.getSelectedIndex());
 		} else if (event.getSource().equals(buttonQuery)) {
-			// TODO search by id
 			final DatabaseQueryBuilder builder = new DatabaseQueryBuilder()
-					// .experimentName(comboBoxSimulationName.getSelectedItem()
-					// != null ?
-					// comboBoxSimulationName.getSelectedItem().toString() : "")
-					.experimentId(((Experiment) comboBoxSimulationName.getSelectedItem()).getExperimentId())
+					.experimentId(((Experiment) comboBoxExperiments.getSelectedItem()).getExperimentId())
 					.coordinateLatitudeOne(getIntValue(inputCoordinateOneLatitude))
 					.coordinateLatitudeTwo(getIntValue(inputCoordinateTwoLatitude))
 					.coordinateLongitudeOne(getIntValue(inputCoordinateOneLongitude))
 					.coordinateLongitudeTwo(getIntValue(inputCoordinateTwoLongitude))
-					// .timeStep(getIntValue(labelTimeStepVal))
 					.startDateTime(getDateFromComboBox(comboBoxFromYears, comboBoxFromMonths, comboBoxFromDays, comboBoxFromHours, comboBoxFromMinutes))
-					.endDateTime(getDateFromComboBox(comboBoxToYears, comboBoxToMonths, comboBoxToDays, comboBoxToHours, comboBoxToMinutes))
-			// .axialTilt(Double.parseDouble(labelAxialTiltVal.getText()))
-			// .orbitalEccentricity(Double.parseDouble(labelOrbitalEccentricityVal.getText()))
-			// .gridSpacing(getIntValue(labelGridSpacingVal))
-			// .dataPrecision(params.getDataPrecision())
-			// .geoPrecision(params.getGeographicPrecision())
-			// .temporalPrecision(params.getTemporalPrecision())
-			;
+					.endDateTime(getDateFromComboBox(comboBoxToYears, comboBoxToMonths, comboBoxToDays, comboBoxToHours, comboBoxToMinutes));
 
 			try {
 				resultsPanel.updateExpirement(dao.get(builder.build()), builder.build());
 			} catch (final CloneNotSupportedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -357,11 +315,15 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 
 	public void updateExperiments() {
 		experiments = dao.getAllExperiments();
+		comboBoxExperiments.setModel(new DefaultComboBoxModel(experiments.toArray()));
+		updateExperimentSelection();
+	}
 
-		// comboBoxSimulationId.setModel(new
-		// DefaultComboBoxModel(experiments.toArray()));
-
-		comboBoxSimulationName.setModel(new DefaultComboBoxModel(experiments.toArray()));
-
+	private void updateExperimentSelection() {
+		final Experiment item = (Experiment) comboBoxExperiments.getSelectedItem();
+		labelAxialTiltVal.setText(Double.toString(item.getPhysicalFactors().getAxialTilt()));
+		labelOrbitalEccentricityVal.setText(Double.toString(item.getPhysicalFactors().getOrbitalEccentricity()));
+		labelTimeStepVal.setText(Integer.toString(item.getSimulationSettings().getTimeStep()));
+		labelGridSpacingVal.setText(Integer.toString(item.getSimulationSettings().getGridSpacing()));
 	}
 }
