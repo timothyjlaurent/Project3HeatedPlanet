@@ -2,6 +2,7 @@ package views;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.min;
+import static java.lang.String.format;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -21,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -41,7 +43,7 @@ public class QueryResultsView extends JPanel {
 	private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 
 	public QueryResultsView() {
-		setPreferredSize(new Dimension(1000, 475));
+		setPreferredSize(new Dimension(1200, 400));
 
 		dataTable = new JTable(new DefaultTableModel(new Object[0][0], new Object[0]));
 		dataTable.setRowSelectionAllowed(false);
@@ -51,13 +53,15 @@ public class QueryResultsView extends JPanel {
 		dataTable.setAlignmentY(Component.TOP_ALIGNMENT);
 		dataTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-		final JScrollPane scollablePane = new JScrollPane(dataTable);
-		scollablePane.setPreferredSize(new Dimension(985, 425));
-		add(scollablePane);
+		final JScrollPane scrollablePane = new JScrollPane(dataTable);
+		scrollablePane.setPreferredSize(new Dimension(1150, 390));
+		scrollablePane.setMaximumSize(new Dimension(1150, 390));
+		scrollablePane.setMinimumSize(new Dimension(1150, 390));
+		scrollablePane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+		add(scrollablePane);
 	}
 
 	public void updateExpirement(final List<Experiment> experiment, final DatabaseQuery query) throws CloneNotSupportedException {
-		// TODO interpolate;
 		if (!experiment.isEmpty()) {
 
 			final Map<Date, Set<GridPoint>> map = Interpolator.interpolate(experiment.get(0), query);
@@ -102,18 +106,18 @@ public class QueryResultsView extends JPanel {
 						builder.append("Long:" + (min(query.getCoordinateLongitudeOne(), query.getCoordinateLongitudeTwo()) + k * query.getGridSpacing()));
 
 						if (!points.isEmpty()) {
-							builder.append("<br/>Min Temp:" + stats.getMin());
-							builder.append("@ " + getStringFromDate(stats.getMinDate(), false));
-							builder.append("<br/>Max Temp:" + stats.getMax());
-							builder.append("@ " + getStringFromDate(stats.getMaxDate(), false));
-							builder.append("<br/>Mean Temp:" + stats.getMean());
+							builder.append("<br/>Min Temp:" + format("%.2f", stats.getMin()));
+							builder.append("<br/>@ " + getStringFromDate(stats.getMinDate(), false));
+							builder.append("<br/>Max Temp:" + format("%.2f", stats.getMax()));
+							builder.append("<br/>@ " + getStringFromDate(stats.getMaxDate(), false));
+							builder.append("<br/>Mean Temp:" + format("%.2f", stats.getMean()));
 						}
 
 						builder.append("</div>");
 						builder.append("</html>");
 						experimentColumnHeaders[pos] = builder.toString();
 						if (!points.isEmpty() && points.get(pos - 1) != null) {
-							experimentValues[i][pos] = Double.toString(points.get(pos - 1).getTemperature());
+							experimentValues[i][pos] = String.format("%.2f", points.get(pos - 1).getTemperature());
 							if (pointsPerRegion.get(i) == null) {
 								final Set<GridPoint> set = new HashSet<GridPoint>();
 								set.add(points.get(pos - 1));
@@ -133,7 +137,7 @@ public class QueryResultsView extends JPanel {
 				final String formattedDate = getStringFromDate(cal.getTime(), false);
 				if (!pointsPerRegion.isEmpty() && pointsPerRegion.get(i) != null) {
 					final SimulationStats statsPerRegion = SimulationUtil.calculateSimulationStats(pointsPerRegion.get(i), experiment.get(0));
-					experimentValues[i][0] = formattedDate + "\nMean: " + statsPerRegion.getMean();
+					experimentValues[i][0] = formattedDate + "\nMean: " + format("%.2f", statsPerRegion.getMean());
 				} else {
 					experimentValues[i][0] = formattedDate;
 				}
@@ -152,6 +156,10 @@ public class QueryResultsView extends JPanel {
 
 			final TableColumn tc = dataTable.getColumnModel().getColumn(0);
 			tc.setCellRenderer(new ScrollingTextAreaCellRenderer(2, 15));
+			dataTable.getColumnModel().getColumn(0).setPreferredWidth(125);
+			for (int i = 1; i < dataTable.getColumnCount(); i++) {
+				dataTable.getColumnModel().getColumn(i).setPreferredWidth(175);
+			}
 		} else {
 			dataTable.setModel(new DefaultTableModel(new Object[0][0], new Object[0]));
 		}

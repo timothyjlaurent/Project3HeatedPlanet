@@ -54,9 +54,9 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 	private final JComboBox comboBoxToMinutes = new JComboBox(getArrayOfIntegers(60, false, "00", 1));;
 
 	private final JFormattedTextField inputCoordinateOneLatitude = new JFormattedTextField(buildNumberFormatter(-180, 180));;
-	private final JFormattedTextField inputCoordinateOneLongitude = new JFormattedTextField(buildNumberFormatter(-180, 180));;
+	private final JFormattedTextField inputCoordinateOneLongitude = new JFormattedTextField(buildNumberFormatter(-90, 90));;
 	private final JFormattedTextField inputCoordinateTwoLatitude = new JFormattedTextField(buildNumberFormatter(-180, 180));;
-	private final JFormattedTextField inputCoordinateTwoLongitude = new JFormattedTextField(buildNumberFormatter(-180, 180));;
+	private final JFormattedTextField inputCoordinateTwoLongitude = new JFormattedTextField(buildNumberFormatter(-90, 90));;
 	private JFormattedTextField inputGridSpacing;
 	private JFormattedTextField inputAxialTilt;
 	private JFormattedTextField inputOrbitalEccentricity;
@@ -74,7 +74,6 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 	public QueryInterfaceView(final CommandLineParam params, final DatabaseDao dao) {
 		this.dao = dao;
 		this.params = params;
-		experiments = dao.getAllExperiments();
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		add(resultsPanel);
 		add(buildQuerySettingsAndInfoPanel());
@@ -97,7 +96,8 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		panel.setBorder(createTitledBorder("Query:"));
 
 		final GridBagConstraints constraint = new GridBagConstraints();
-		constraint.weighty = 1;
+		constraint.fill = GridBagConstraints.VERTICAL;
+		constraint.weighty = 1.0;
 		constraint.gridy = 0;
 
 		panel.add(newSimulationPanel(), constraint);
@@ -115,17 +115,8 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		simulationPanel.setBorder(BorderFactory.createTitledBorder("Simulation Factors"));
 
 		simulationPanel.add(new JLabel("Simulation Id:"), labelConstraints);
-		//
-		final List<String> experimentList = new ArrayList();
-		for (final Experiment exp : experiments) {
-			experimentList.add(exp.toStringShort());
-		}
-		// final SessionFactory sessionFactory = new Sess;
-		// Session session = sessionFactory.openSession();
 
-		// comboBoxSimulationId = new JComboBox(new
-		// DefaultComboBoxModel(experiments.toArray()));
-		comboBoxSimulationId = new JComboBox(experimentList.toArray());
+		comboBoxSimulationId = new JComboBox();
 		// comboBoxSimulationId.addItemListener(new ItemListener() {
 		//
 		// @Override
@@ -183,27 +174,28 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		latLongPanel.setLayout(new BoxLayout(latLongPanel, BoxLayout.Y_AXIS));
 		latLongPanel.setBorder(createTitledBorder("Latitudes/Longitudes"));
 
-		latLongPanel.add(buildCoordinatePanel("Coordinate One", inputCoordinateOneLatitude, inputCoordinateOneLongitude));
-		latLongPanel.add(buildCoordinatePanel("Coordinate Two", inputCoordinateTwoLatitude, inputCoordinateTwoLongitude));
+		latLongPanel.add(buildCoordinatePanel("Coordinate One", inputCoordinateOneLatitude, inputCoordinateOneLongitude, -1));
+		latLongPanel.add(buildCoordinatePanel("Coordinate Two", inputCoordinateTwoLatitude, inputCoordinateTwoLongitude, 1));
 
 		return latLongPanel;
 	}
 
-	private JPanel buildCoordinatePanel(final String title, final JFormattedTextField inputCoordinateLatitude, final JFormattedTextField inputCoordinateLongitude) {
+	private JPanel buildCoordinatePanel(final String title, final JFormattedTextField inputCoordinateLatitude, final JFormattedTextField inputCoordinateLongitude, final int defaultValue) {
 		final JPanel coordinatePanel = new JPanel();
 		coordinatePanel.setBorder(BorderFactory.createTitledBorder(title));
 		labelConstraints = buildConstraints(GridBagConstraints.NORTHWEST, 0, new Insets(10, 10, 0, 0));
 		valueConstraints = buildConstraints(GridBagConstraints.NORTHWEST, 1, new Insets(10, 10, 0, 0));
 
-		addCoordinateLabelAndInput(coordinatePanel, inputCoordinateLatitude, "Latitude: ");
-		addCoordinateLabelAndInput(coordinatePanel, inputCoordinateLongitude, "Longitude: ");
+		addCoordinateLabelAndInput(coordinatePanel, inputCoordinateLatitude, "Latitude: ", defaultValue * 180);
+		addCoordinateLabelAndInput(coordinatePanel, inputCoordinateLongitude, "Longitude: ", defaultValue * 90);
 
 		return coordinatePanel;
 	}
 
-	private void addCoordinateLabelAndInput(final JPanel coordinatePanel, final JFormattedTextField input, final String title) {
+	private void addCoordinateLabelAndInput(final JPanel coordinatePanel, final JFormattedTextField input, final String title, final int defaultValue) {
 		coordinatePanel.add(new JLabel(title), labelConstraints);
 		input.setColumns(5);
+		input.setText(Integer.toString(defaultValue));
 		coordinatePanel.add(input, valueConstraints);
 	}
 
@@ -336,5 +328,16 @@ public class QueryInterfaceView extends JPanel implements ActionListener {
 		instance.set(getIntValue(comboBoxYears), getIntValue(comboBoxMonths) - 1, getIntValue(comboBoxDays), getIntValue(comboBoxHours), getIntValue(comboBoxMinutes), 0);
 		instance.set(Calendar.MILLISECOND, 0);
 		return instance.getTime();
+	}
+
+	public void updateExperiments() {
+		experiments = dao.getAllExperiments();
+
+		final List<String> experimentList = new ArrayList<String>();
+		for (final Experiment exp : experiments) {
+			experimentList.add(exp.toStringShort());
+		}
+
+		comboBoxSimulationId.setModel(new DefaultComboBoxModel(experimentList.toArray()));
 	}
 }

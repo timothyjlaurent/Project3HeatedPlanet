@@ -27,10 +27,10 @@ public class SimulationSettings {
 		this.experimentName = experimentName;
 	}
 
-	public SimulationSettings(final String experimentName, final int gridSpacing, final int timeStamp, final int simulationLength) {
+	public SimulationSettings(final String experimentName, final int gridSpacing, final int timeStep, final int simulationLength) {
 		this.experimentName = experimentName;
 		this.gridSpacing = gridSpacing;
-		timeStep = timeStamp;
+		this.timeStep = timeStep;
 		this.simulationLength = simulationLength;
 	}
 
@@ -64,6 +64,11 @@ public class SimulationSettings {
 
 	public void setSimulationLength(final int simulationLength) {
 		this.simulationLength = simulationLength;
+	}
+
+	@Override
+	public String toString() {
+		return "SimulationSettings [experimentName=" + experimentName + ", gridSpacing=" + gridSpacing + ", timeStep=" + timeStep + ", simulationLength=" + simulationLength + "]";
 	}
 
 }

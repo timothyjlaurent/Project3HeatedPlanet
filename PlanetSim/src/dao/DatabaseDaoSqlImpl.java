@@ -1,8 +1,11 @@
 package dao;
 
 import static java.util.Collections.sort;
+import static org.hibernate.criterion.Projections.projectionList;
+import static org.hibernate.criterion.Projections.property;
 import static org.hibernate.criterion.Restrictions.between;
 import static org.hibernate.criterion.Restrictions.eq;
+import static org.hibernate.transform.Transformers.aliasToBean;
 import static util.SimulationUtil.convertSetToMap;
 
 import java.math.BigDecimal;
@@ -81,20 +84,8 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 
 	@Override
 	public void saveOrUpdate(final Experiment experiment) {
-		// TODO make this threaded
-
-		session = sessionFactory.openSession();
-		final Transaction tx = session.beginTransaction();
-		System.out.println("Saving Experiment");
-		final Map<Date, Set<GridPoint>> map = convertSetToMap(experiment.getGridPoints());
 
 		// Remove dates due to precision
-		final List<Date> dates = new ArrayList<Date>(map.keySet());
-		sort(dates);
-
-		final int tempPrecision = experiment.getCommandLineParam().getTemporalPrecision();
-		final int numOfDatesToKeep = (int) (dates.size() * tempPrecision / 100.00);
-
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -136,18 +127,12 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 					final ArrayList<Integer> geoIndexesToKeep = new ArrayList<Integer>();
 
 					for (int i = 0; i < numOfGeoToKeep; i += 1) {
-
 						geoIndexesToKeep.add((int) Math.round((double) i / numOfGeoToKeep * list.size()));
-
 					}
 
 					int pos = 0;
 					for (final Iterator<GridPoint> iterator = list.iterator(); iterator.hasNext();) {
 						final GridPoint gridPoint = iterator.next();
-						// if (pos != 0 && pos % numOfGeoToKeep == 0) {
-						// iterator.remove();
-						// } else {
-
 						if (!geoIndexesToKeep.contains(pos)) {
 							iterator.remove();
 						} else {
@@ -169,7 +154,6 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 				session.flush();
 				session.close();
 			}
-
 		}).start();
 	}
 
@@ -187,14 +171,30 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public List<Experiment> getAllExperiments() {
 		session = sessionFactory.openSession();
 		session.beginTransaction();
-		final Criteria criteria = session.createCriteria(Experiment.class);
-		@SuppressWarnings("unchecked")
+		// Add Projections to not get back the list of grid points
+		final Criteria criteria = session.createCriteria(Experiment.class)
+				.setProjection(projectionList()
+						.add(property("experimentId"))
+						.add(property("simulationSettings"), "simulationSettings")
+						.add(property("simulationSettings.experimentName"))
+						.add(property("simulationSettings.gridSpacing"))
+						.add(property("simulationSettings.timeStep"))
+						.add(property("simulationSettings.simulationLength"))
+						.add(property("commandLineParam"), "commandLineParam")
+						.add(property("commandLineParam.geographicPrecision"))
+						.add(property("commandLineParam.temporalPrecision"))
+						.add(property("commandLineParam.dataPrecision"))
+						.add(property("physicalFactors"), "physicalFactors")
+						.add(property("physicalFactors.axialTilt"))
+						.add(property("physicalFactors.orbitalEccentricity")))
+				.setResultTransformer(aliasToBean(Experiment.class));
+
 		final List<Experiment> list = criteria.list();
 		session.close();
 		return list.isEmpty() ? new ArrayList<Experiment>() : list;
 	}
-
 }

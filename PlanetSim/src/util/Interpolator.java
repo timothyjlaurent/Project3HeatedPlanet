@@ -20,7 +20,6 @@ import constants.SimulationConstants;
 public class Interpolator {
 
 	public static Map<Date, Set<GridPoint>> interpolate(final Experiment experiment, final DatabaseQuery query) throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
 
 		Map<Date, Set<GridPoint>> map = SimulationUtil.convertSetToMap(experiment.getGridPoints());
 

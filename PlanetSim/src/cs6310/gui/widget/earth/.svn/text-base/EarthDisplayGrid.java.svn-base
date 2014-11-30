@@ -107,7 +107,6 @@ public class EarthGrid extends JPanel {
         g.setColor(colorPicker(colorValue));
         g.fillRect(cellX, cellY, cellWidth, cellHeight);
         cellY += cellHeight;
-//        System.out.print("\n["+x+", "+y+"] color: " + colorValue);
       }      
       cellX += cellWidth;
       cellY = 0;

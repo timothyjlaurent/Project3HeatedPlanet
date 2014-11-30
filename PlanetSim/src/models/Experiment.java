@@ -23,7 +23,7 @@ public class Experiment {
 	@Column(name = "EXPERIMENT_ID")
 	private int experimentId = -1;
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "experiment_id")
 	private Set<GridPoint> gridPoints = new HashSet<GridPoint>();
 
