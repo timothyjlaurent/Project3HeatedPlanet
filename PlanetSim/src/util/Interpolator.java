@@ -56,8 +56,8 @@ public class Interpolator {
 					gridPoint.setTopLatitude(90 - j);
 					gridPoint.setDateTime(date);
 
-					final double latitude = (gridPoint.getTopLatitude() - experiment.getSimulationSettings().getGridSpacing()) / 2.0;
-					final double longitude = (gridPoint.getLeftLongitude() + experiment.getSimulationSettings().getGridSpacing()) / 2.0;
+					final double latitude = (gridPoint.getTopLatitude() - experiment.getSimulationSettings().getGridSpacing() / 2.0);
+					final double longitude = (gridPoint.getLeftLongitude() + experiment.getSimulationSettings().getGridSpacing() / 2.0);
 					gridPoint.setTemperature(getPointTempGeographicInteroplate(gridPoint, latitude, longitude, experiment.getSimulationSettings().getGridSpacing(), map.get(date)));
 					outSet.add(gridPoint);
 				}
@@ -91,7 +91,8 @@ public class Interpolator {
 			final double dist = SimulationUtil.calcDistanceBetweenLatLongPairs(latitude, longitude, lat1, long1);
 			final double weight = 1 / Math.pow(dist, 1.3);
 			sumOfWeights += weight;
-			sumOfWeightedVals += weight * point.getTemperature();
+			final double temp = point.getTemperature();
+			sumOfWeightedVals += weight * temp;
 		}
 		return sumOfWeightedVals / sumOfWeights;
 	}
@@ -137,29 +138,34 @@ public class Interpolator {
 				gridNext = SimulationUtil.convertSetToGrid(map.get(storedTimePoints.get(i + 1)), experiment.getSimulationSettings().getGridSpacing());
 			}
 			for (int j = 0; j < gridPrev.length; j += 1) {
-				for (int k = 0; k < gridPrev[0].length; k += 1) {
+				for (int k = 0; k < gridPrev[j].length; k += 1) {
 
 					final GridPoint point1 = gridPrev[j][k];
-					final GridPoint point2 = gridNext[j][k];
 
-					final long indexDate = storedTimePoints.get(i).getTime();
+					if (point1 != null) {
 
-					outSet.add(point1.clone());
+						// System.err.println( 'valid Point' );
+						final GridPoint point2 = gridNext[j][k];
 
-					if (i == 0) {
-						// work backward
-						for (long l = indexDate - timeStep; l >= queryStartTime; l -= timeStep) {
-							outSet.add(createTemporalInterpolatedGridPoint(point1, point2, l));
+						final long indexDate = storedTimePoints.get(i).getTime();
+
+						outSet.add(point1.clone());
+
+						if (i == 0) {
+							// work backward
+							for (long l = indexDate - timeStep; l >= queryStartTime; l -= timeStep) {
+								outSet.add(createTemporalInterpolatedGridPoint(point1, point2, l));
+							}
 						}
-					}
 
-					if (i == storedTimePoints.size() - 1) {
-						for (long l = indexDate + timeStep; l < queryEndTime; l += timeStep) {
-							outSet.add(createTemporalInterpolatedGridPoint(point1, point2, l));
-						}
-					} else {
-						for (long l = indexDate + timeStep; l < storedTimePoints.get(i + 1).getTime(); l += timeStep) {
-							outSet.add(createTemporalInterpolatedGridPoint(point1, point2, l));
+						if (i == storedTimePoints.size() - 1) {
+							for (long l = indexDate + timeStep; l < queryEndTime; l += timeStep) {
+								outSet.add(createTemporalInterpolatedGridPoint(point1, point2, l));
+							}
+						} else {
+							for (long l = indexDate + timeStep; l < storedTimePoints.get(i + 1).getTime(); l += timeStep) {
+								outSet.add(createTemporalInterpolatedGridPoint(point1, point2, l));
+							}
 						}
 					}
 
