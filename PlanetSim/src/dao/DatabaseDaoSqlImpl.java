@@ -67,15 +67,21 @@ public class DatabaseDaoSqlImpl implements DatabaseDao {
 
 	private Criteria createCriteria(final Session curSession, final DatabaseQuery query) {
 		final Criteria cr = curSession.createCriteria(Experiment.class);
-		cr.add(eq("experimentId", query.getExperimentId()));
-		cr.add(eq("commandLineParam.geographicPrecision", query.getGeoPrecision()));
-		cr.add(eq("commandLineParam.temporalPrecision", query.getTemporalPrecision()));
-		cr.add(eq("commandLineParam.dataPrecision", query.getDataPrecision()));
-		cr.add(eq("simulationSettings.experimentName", query.getExpirementName()));
-		cr.add(eq("simulationSettings.gridSpacing", query.getGridSpacing()));
-		cr.add(eq("simulationSettings.timeStep", query.getTimeStep()));
-		cr.add(eq("physicalFactors.axialTilt", query.getAxialTilt()));
-		cr.add(eq("physicalFactors.orbitalEccentricity", query.getOrbitalEccentricity()));
+		final int id = query.getExperimentId();
+		cr.add(eq("experimentId", id));
+		// cr.add(eq("commandLineParam.geographicPrecision",
+		// query.getGeoPrecision()));
+		// cr.add(eq("commandLineParam.temporalPrecision",
+		// query.getTemporalPrecision()));
+		// cr.add(eq("commandLineParam.dataPrecision",
+		// query.getDataPrecision()));
+		// cr.add(eq("simulationSettings.experimentName",
+		// query.getExpirementName()));
+		// cr.add(eq("simulationSettings.gridSpacing", query.getGridSpacing()));
+		// cr.add(eq("simulationSettings.timeStep", query.getTimeStep()));
+		// cr.add(eq("physicalFactors.axialTilt", query.getAxialTilt()));
+		// cr.add(eq("physicalFactors.orbitalEccentricity",
+		// query.getOrbitalEccentricity()));
 		cr.createAlias("gridPoints", "gridPoints");
 		cr.add(between("gridPoints.dateTime", query.getStartDateTime(), query.getEndDateTime()));
 		cr.add(between("gridPoints.topLatitude", query.getCoordinateLatitudeOne(), query.getCoordinateLatitudeTwo()));

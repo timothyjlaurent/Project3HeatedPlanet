@@ -23,13 +23,15 @@ public class Interpolator {
 
 		Map<Date, Set<GridPoint>> map = SimulationUtil.convertSetToMap(experiment.getGridPoints());
 
-		final long numOfLatitudeSpaces = abs(query.getCoordinateLatitudeTwo() - query.getCoordinateLatitudeOne()) / query.getGridSpacing();
-		final long numOfLongitudeSpaces = abs(query.getCoordinateLongitudeTwo() - query.getCoordinateLongitudeOne()) / query.getGridSpacing();
+		final long numOfLatitudeSpaces = abs(query.getCoordinateLatitudeTwo() - query.getCoordinateLatitudeOne()) / experiment.getSimulationSettings().getGridSpacing();
+		final long numOfLongitudeSpaces = abs(query.getCoordinateLongitudeTwo() - query.getCoordinateLongitudeOne()) / experiment.getSimulationSettings().getGridSpacing();
 
 		if (experiment.getCommandLineParam().getTemporalPrecision() < 100) {
+
 			map = interpolateTemporal(map, experiment, query);
 		}
 		if (experiment.getCommandLineParam().getGeographicPrecision() < 100) {
+
 			map = interpolateGeographic(map, experiment);
 		}
 
