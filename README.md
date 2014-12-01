@@ -20,14 +20,15 @@ and then enter the password for the root; on gatech VM this is `root`
 
 ```
 cd ./PlanetSim/
-javac -d bin -sourcepath src -cp lib:lib/*  src/Demo.java
+mkdir -p bin
+javac -d bin -cp “src/:lib/:resource/:lib/*” src/Demo.java
 ```
 
 ### run program
 
 ```
 $ cd bin
-$ java -cp ./:./*  Demo
+$ java -cp “../lib/*:../lib/:./”  Demo
 ```
 
 - Command line arguments
