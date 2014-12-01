@@ -18,6 +18,10 @@ and then enter the password for the root; on gatech VM this is `root`
 
 ### compile classes
 
+
+javac -cp “./PlanetSim/lib/****” ./PlanetSim/src/Demo.java
+
+
 ### run program
 
 
