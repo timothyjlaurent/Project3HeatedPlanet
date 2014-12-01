@@ -387,7 +387,8 @@ public class SimulationView extends JPanel implements ActionListener {
 					labelStdDeviation.setText(DEC_FMT.format(stats.getStandardDeviation()));
 					labelMean.setText(DEC_FMT.format(stats.getMean()));
 					labelOrbitalPosition.setText(DEC_FMT.format(SimulationController.getOrbitalPos()));
-					labelRotationalPosition.setText(DEC_FMT.format(minutesTimePassed % 1440 / 1440 * 360));
+					final double rotationalPos = minutesTimePassed % 1440 / 1440.0 * 360;
+					labelRotationalPosition.setText(DEC_FMT.format(rotationalPos));
 
 					if (showAnimation) {
 						earthPanel.updateGrid(gridPoints, stats.getMin(), stats.getMax(), SimulationController.getSunLat(), SimulationController.getSunLong());
