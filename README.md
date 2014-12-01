@@ -25,7 +25,7 @@ Recommended to compile in Eclipse. We had difficulty reliably building the proje
 
 ```
 $ cd jar
-$ java Demo.jar [ARGS]
+$ java -jar Demo.jar [ARGS]
 ```
 
 - Command line arguments
