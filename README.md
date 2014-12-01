@@ -29,9 +29,9 @@ $ java -jar Demo.jar [ARGS]
 ```
 
 - Command line arguments
- -g geographic precision - Percentage of grid points to keep (1-100) : Default 100
- -t temporal precision - Percentage of time points to keep (1-100) : Default 100
- -p data precision - precision of numeric data - ie number of decimal places to keep : Default 5
+ - -g geographic precision - Percentage of grid points to keep (1-100) : Default 100
+ - -t temporal precision - Percentage of time points to keep (1-100) : Default 100
+ - -p data precision - precision of numeric data - ie number of decimal places to keep : Default 5
 
 ### User interface
 
