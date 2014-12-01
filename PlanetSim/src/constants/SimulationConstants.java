@@ -16,7 +16,7 @@ public class SimulationConstants {
 	public static final Calendar DEFAULT_START_DATE = new GregorianCalendar(2000, 0, 4, 0, 0);
 
 	// DEFAULTS COMMAND LINE PARAMETERS
-	public static final int DEFAULT_DATA_PRECISION = 8;
+	public static final int DEFAULT_DATA_PRECISION = 5;
 	public static final int DEFAULT_GEOGRAPHIC_PRECISION = 100;
 	public static final int DEFAULT_TEMPORAL_PRECISION = 100;
 	public static final double SEMIMAJOR_AXIS = 149600000;
